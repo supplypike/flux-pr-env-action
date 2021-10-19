@@ -32,5 +32,5 @@ jobs:
           echo "environment-kubeconfig:" ${KUBECONFIG}
       - uses: ./
         with:
-          repo-secret: "foo"
-          kustomize-path: "bar"
+          repoSecret: "foo"
+          kustomizePath: "bar"
