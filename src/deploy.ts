@@ -3,6 +3,7 @@ import * as k8s from '@kubernetes/client-node'
 
 import {Kustomization, kustomization} from './kustomization'
 import {GitRepository, gitRepository} from './gitrepository'
+import {HelmRelease, helmrelease} from './helmrelease'
 
 const kc = new k8s.KubeConfig()
 kc.loadFromDefault()
@@ -41,6 +42,18 @@ async function createNamespacedKustomization(
   await customApi.createNamespacedCustomObject(
     ...kustomization(namespace),
     payload
+  )
+}
+
+async function patchNamespacedHelmRelease(
+  name: string,
+  namespace: string,
+  patch: Partial<HelmRelease>
+): Promise<void> {
+  await customApi.patchNamespacedCustomObject(
+    ...helmrelease(namespace),
+    name,
+    patch
   )
 }
 
@@ -89,7 +102,7 @@ export interface FluxDeployConfig {
 export interface Deploy {
   deploy(): Promise<void>
   destroy(): Promise<void>
-  rollout(): Promise<void>
+  rollout(image: string): Promise<void>
 }
 
 export function fluxDeploy(d: FluxDeployConfig): Deploy {
@@ -114,8 +127,16 @@ export function fluxDeploy(d: FluxDeployConfig): Deploy {
     await k8sApi.deleteNamespace(d.namespace)
   }
 
-  async function rollout(): Promise<void> {
-    // patch deploy? HR? kustomization?
+  async function rollout(image: string): Promise<void> {
+    await patchNamespacedHelmRelease(d.name, d.namespace, {
+      spec: {
+        values: {
+          deployment: {
+            image
+          }
+        }
+      }
+    })
   }
 
   return {

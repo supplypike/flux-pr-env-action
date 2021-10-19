@@ -8,6 +8,9 @@ inputs:
   repoSecret:
     required: true
     description: name of github secret in cluster
+  deployImage:
+    required: true
+    description: deploy image
 runs:
   using: 'node12'
   main: 'dist/index.js'

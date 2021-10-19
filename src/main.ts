@@ -8,6 +8,7 @@ import {getInputRequired} from './utils'
 
 const INPUT_KUSTOMIZE_PATH = 'kustomizePath'
 const INPUT_REPO_SECRET = 'repoSecret'
+const INPUT_DEPLOY_IMAGE = 'deployImage'
 
 async function run(): Promise<void> {
   try {
@@ -33,15 +34,14 @@ async function run(): Promise<void> {
     })
 
     if (action === 'opened' || action === 'reopened') {
-      deploy.deploy()
+      await deploy.deploy()
     }
 
     if (action === 'closed') {
-      deploy.destroy()
-    }
-
-    if (action === 'synchronize') {
-      deploy.rollout()
+      await deploy.destroy()
+    } else {
+      const deployImage = getInputRequired(INPUT_DEPLOY_IMAGE)
+      await deploy.rollout(deployImage)
     }
   } catch (error) {
     console.log(error) // eslint-disable-line no-console
