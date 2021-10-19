@@ -15,6 +15,6 @@ export const helmrelease = (
 ): [string, string, string, string] => {
   const group = 'helm.toolkit.fluxcd.io'
   const version = 'v2beta1'
-  const kind = 'HelmRelease'
+  const kind = 'helmreleases'
   return [group, version, namespace, kind]
 }

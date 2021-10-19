@@ -22,6 +22,6 @@ export const gitRepository = (
 ): [string, string, string, string] => {
   const group = 'source.toolkit.fluxcd.io'
   const version = 'v1beta1'
-  const kind = 'GitRepository'
+  const kind = 'gitrepositories'
   return [group, version, namespace, kind]
 }

@@ -21,6 +21,6 @@ export const kustomization = (
 ): [string, string, string, string] => {
   const group = 'kustomize.toolkit.fluxcd.io'
   const version = 'v1beta1'
-  const kind = 'Kustomization'
+  const kind = 'kustomizations'
   return [group, version, namespace, kind]
 }

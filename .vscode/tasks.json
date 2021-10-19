@@ -1,0 +1,15 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "npm",
+			"script": "all",
+			"problemMatcher": [
+				"$eslint-compact",
+				"$tsc"
+			],
+			"label": "npm: all",
+			"detail": "npm run build && npm run format && npm run lint && npm run package && npm test"
+		}
+	]
+}
