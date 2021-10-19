@@ -34,3 +34,4 @@ jobs:
         with:
           repoSecret: "foo"
           kustomizePath: "bar"
+          deployImage: "nginx:latest"
