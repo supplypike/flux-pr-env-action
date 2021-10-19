@@ -108,12 +108,7 @@ interface PullRequestContext {
   action: PullRequestEvent['action']
 }
 
-export function slugPrContext(context: Context): PullRequestContext {
-  if (context.eventName !== 'pull_request') {
-    throw new Error('Not a pull request event')
-  }
-
-  const payload = context.payload as PullRequestEvent
+export function slugPrContext(payload: PullRequestEvent): PullRequestContext {
   const action = payload.action
   const head_ref = payload.pull_request.head.ref
   const name = payload.pull_request.head.repo.name

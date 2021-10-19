@@ -1,5 +1,6 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
+import { PullRequestEvent } from '@octokit/webhooks-types'
 import {fluxDeploy} from './deploy'
 
 import {slugPrContext} from './slug'
@@ -10,9 +11,13 @@ const INPUT_REPO_SECRET = 'repoSecret'
 
 async function run(): Promise<void> {
   try {
+    if (github.context.eventName !== 'pull_request') {
+      return
+    }
+    const payload = github.context.payload as PullRequestEvent;
     const kPath = getInputRequired(INPUT_KUSTOMIZE_PATH)
     const gitSecret = getInputRequired(INPUT_REPO_SECRET)
-    const {branch, namespace, ssh_url, action} = slugPrContext(github.context)
+    const {branch, namespace, ssh_url, action} = slugPrContext(payload)
 
     const deploy = fluxDeploy({
       name: namespace,
