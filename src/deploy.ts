@@ -6,18 +6,10 @@ import {GitRepository, gitRepository} from './gitrepository'
 import {HelmRelease, helmrelease} from './helmrelease'
 
 const kc = new k8s.KubeConfig()
-kc.loadFromFile(process.env.KUBECONFIG || '~/.kube/config')
+kc.loadFromDefault()
 
 const k8sApi = kc.makeApiClient(k8s.CoreV1Api)
 const customApi = kc.makeApiClient(k8s.CustomObjectsApi)
-
-const ns = (name: string): k8s.V1Namespace => {
-  return {
-    metadata: {
-      name
-    }
-  }
-}
 
 async function createNamespacedKustomization(
   name: string,
@@ -86,6 +78,19 @@ async function createNamespacedGitRepository(
   )
 }
 
+async function createNamespace(namespace: string): Promise<void> {
+  try {
+    await k8sApi.createNamespace({
+      metadata: {
+        name: namespace
+      }
+    })
+  } catch (error) {
+    core.error(error as string)
+    throw error
+  }
+}
+
 export interface FluxDeployConfig {
   name: string
   namespace: string
@@ -108,12 +113,18 @@ export interface Deploy {
 export function fluxDeploy(d: FluxDeployConfig): Deploy {
   async function deploy(): Promise<void> {
     core.info(`deploy:\n ${JSON.stringify(d)}`)
-    await k8sApi.createNamespace(ns(d.namespace))
+
+    core.info(`creating namespace ${d.namespace}`)
+    await createNamespace(d.namespace)
+
+    core.info(`creating k11n`)
     await createNamespacedKustomization(
       d.name,
       d.namespace,
       d.kustomization.path
     )
+
+    core.info(`creating git repo`)
     await createNamespacedGitRepository(
       d.name,
       d.namespace,

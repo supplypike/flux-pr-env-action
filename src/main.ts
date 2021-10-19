@@ -44,7 +44,6 @@ async function run(): Promise<void> {
       await deploy.rollout(deployImage)
     }
   } catch (error) {
-    console.log(error) // eslint-disable-line no-console
     if (error instanceof Error) core.setFailed(error.message)
   }
 }
