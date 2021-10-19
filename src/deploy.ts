@@ -6,7 +6,7 @@ import {GitRepository, gitRepository} from './gitrepository'
 import {HelmRelease, helmrelease} from './helmrelease'
 
 const kc = new k8s.KubeConfig()
-kc.loadFromDefault()
+kc.loadFromFile(process.env.KUBECONFIG || '~/.kube/config')
 
 const k8sApi = kc.makeApiClient(k8s.CoreV1Api)
 const customApi = kc.makeApiClient(k8s.CustomObjectsApi)
