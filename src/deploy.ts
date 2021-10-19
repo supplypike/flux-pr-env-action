@@ -134,6 +134,8 @@ export function fluxDeploy(d: FluxDeployConfig): Deploy {
   }
 
   async function rollout(image: string): Promise<void> {
+    core.info(`rollout image ${image}`)
+
     await patchNamespacedHelmRelease(d.name, d.namespace, {
       spec: {
         values: {

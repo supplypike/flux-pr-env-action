@@ -46,7 +46,7 @@ async function run(): Promise<void> {
     }
   } catch (error) {
     if (error instanceof HttpError) {
-      core.info(`HttpError ${error.statusCode} :\n ${error.body}`)
+      core.info(`HttpError ${error.statusCode}: ${error.body}`)
     }
     if (error instanceof Error) core.setFailed(error.message)
   }
