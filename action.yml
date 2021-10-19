@@ -2,10 +2,10 @@ name: 'Your name here'
 description: 'Provide a description here'
 author: 'Your name or organization here'
 inputs:
-  kustomize-path: 
+  kustomizePath: 
     required: true
     description: path to kustomization in git repo
-  repo-secret:
+  repoSecret:
     required: true
     description: name of github secret in cluster
 runs:

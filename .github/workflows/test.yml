@@ -19,8 +19,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: "Create cluster using KinD"
-        uses: engineerd/setup-kind@v0.5.0
+      - name: "Create cluster"
+        uses: AbsaOSS/k3d-action@v1.5.0
+        with:
+          cluster-name: "test-cluster-1"
+          args: --agents 1
       - name: Testing
         run: |
           kubectl cluster-info

@@ -1,8 +1,8 @@
-import { Context } from '@actions/github/lib/context'
-import { PullRequestEvent } from '@octokit/webhooks-definitions/schema'
+import {Context} from '@actions/github/lib/context'
+import {PullRequestEvent} from '@octokit/webhooks-types' // eslint-disable-line import/no-unresolved
 
-/** 
- * source: 
+/**
+ * source:
  * https://raw.githubusercontent.com/rlespinasse/github-slug-action/2f05f8b5cbdfb8b37e68426a162be978e4e82550/src/slug.ts
  */
 
@@ -71,7 +71,6 @@ export function slugurl(envVar: string): string {
   return slug(replaceAnyNonUrlCharactersWithHyphen(envVar))
 }
 
-
 /**
  * slugurlref will take envVar and then :
  * - remove refs/(heads|tags|pull)/
@@ -101,14 +100,22 @@ export function removeRef(envVar: string): string {
   return envVar.replace(RegExp('^refs/(heads|tags|pull)/'), '')
 }
 
-export function slugPrContext(context: Context) {
-  if (context.eventName != "pull_request") {
-    throw new Error("Not a pull request event")
+interface PullRequestContext {
+  name: string
+  branch: string
+  namespace: string
+  ssh_url: string
+  action: PullRequestEvent['action']
+}
+
+export function slugPrContext(context: Context): PullRequestContext {
+  if (context.eventName !== 'pull_request') {
+    throw new Error('Not a pull request event')
   }
 
-  const payload = context.payload as PullRequestEvent;
+  const payload = context.payload as PullRequestEvent
   const action = payload.action
-  const head_ref = payload.pull_request.head.ref;
+  const head_ref = payload.pull_request.head.ref
   const name = payload.pull_request.head.repo.name
   const branch = slugurlref(head_ref)
   const namespace = slugurl(`${name}-${branch}`)
