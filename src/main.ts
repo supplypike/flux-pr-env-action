@@ -1,16 +1,45 @@
 import * as core from '@actions/core'
-import {wait} from './wait'
+import * as github from '@actions/github'
+import { fluxDeploy } from './deploy'
+
+import { slugPrContext } from './slug'
+import { getInputRequired } from './utils'
+
+const INPUT_KUSTOMIZE_PATH = "kustomize-path"
+const INPUT_REPO_SECRET = "repo-secret"
 
 async function run(): Promise<void> {
   try {
-    const ms: string = core.getInput('milliseconds')
-    core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
+    const kPath = getInputRequired(INPUT_KUSTOMIZE_PATH)
+    const gitSecret = getInputRequired(INPUT_REPO_SECRET)
+    const { branch, namespace, ssh_url, action } = slugPrContext(github.context)
 
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
+    const deploy = fluxDeploy({
+      name: namespace,
+      namespace,
+      kustomization: {
+        path: kPath,
+      },
+      gitRepo: {
+        branch,
+        secretName: gitSecret,
+        url: ssh_url
+      }
+    })
+  
+    if (action === "opened" || action == "reopened") {
+      deploy.deploy()
+    }
 
-    core.setOutput('time', new Date().toTimeString())
+    if (action == "closed") {
+      deploy.destroy()
+    }
+
+    if (action == "synchronize") {
+      deploy.rollout()
+    }
+
+
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
   }

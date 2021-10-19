@@ -2,10 +2,12 @@ name: 'Your name here'
 description: 'Provide a description here'
 author: 'Your name or organization here'
 inputs:
-  milliseconds: # change this
+  kustomize-path: 
     required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+    description: path to kustomization in git repo
+  repo-secret:
+    required: true
+    description: name of github secret in cluster
 runs:
   using: 'node12'
   main: 'dist/index.js'
