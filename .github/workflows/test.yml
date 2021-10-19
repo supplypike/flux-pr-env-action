@@ -20,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: "Create cluster using KinD"
-      - uses: engineerd/setup-kind@v0.5.0
+        uses: engineerd/setup-kind@v0.5.0
       - name: Testing
         run: |
           kubectl cluster-info
