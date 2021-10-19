@@ -1,4 +1,3 @@
-import {Context} from '@actions/github/lib/context'
 import {PullRequestEvent} from '@octokit/webhooks-types' // eslint-disable-line import/no-unresolved
 
 /**
