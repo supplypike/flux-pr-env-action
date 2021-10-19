@@ -79,16 +79,11 @@ async function createNamespacedGitRepository(
 }
 
 async function createNamespace(namespace: string): Promise<void> {
-  try {
-    await k8sApi.createNamespace({
-      metadata: {
-        name: namespace
-      }
-    })
-  } catch (error) {
-    core.error(error as string)
-    throw error
-  }
+  await k8sApi.createNamespace({
+    metadata: {
+      name: namespace
+    }
+  })
 }
 
 export interface FluxDeployConfig {
