@@ -21,7 +21,7 @@ async function run(): Promise<void> {
     const kPath = getInputRequired(INPUT_KUSTOMIZE_PATH)
     const gitSecret = getInputRequired(INPUT_REPO_SECRET)
     const namespace = getInputRequired(INPUT_NAMESPACE)
-    const {branch, sshUrl, action, repoName} = slugPrContext(payload)
+    const {branch, cloneUrl, action, repoName} = slugPrContext(payload)
     const name = slugurlref(`${repoName}-${branch}`)
 
     const deploy = fluxDeploy({
@@ -33,7 +33,7 @@ async function run(): Promise<void> {
       gitRepo: {
         branch,
         secretName: gitSecret,
-        url: sshUrl
+        url: cloneUrl
       }
     })
 

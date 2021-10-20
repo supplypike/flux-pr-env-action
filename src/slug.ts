@@ -102,7 +102,7 @@ export function removeRef(envVar: string): string {
 interface PullRequestContext {
   repoName: string
   branch: string
-  sshUrl: string
+  cloneUrl: string
   action: PullRequestEvent['action']
 }
 
@@ -110,12 +110,12 @@ export function slugPrContext(payload: PullRequestEvent): PullRequestContext {
   const action = payload.action
   const repoName = payload.pull_request.head.repo.name
   const branch = slugurlref(payload.pull_request.head.ref)
-  const sshUrl = payload.pull_request.head.repo.ssh_url
+  const cloneUrl = payload.pull_request.head.repo.clone_url
 
   return {
     repoName,
     branch,
-    sshUrl,
+    cloneUrl,
     action
   }
 }

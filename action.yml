@@ -11,6 +11,9 @@ inputs:
   deployImage:
     required: true
     description: deploy image
+  namespace:
+    required: true
+    description: deploy namespace
 runs:
   using: 'node12'
   main: 'dist/index.js'
