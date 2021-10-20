@@ -37,7 +37,8 @@ async function run(): Promise<void> {
       }
     })
 
-    if (action === 'opened' || action === 'reopened') {
+    const forceDeploy = core.getBooleanInput('forceDeploy')
+    if (action === 'opened' || action === 'reopened' || forceDeploy) {
       await deploy.deploy()
     }
 

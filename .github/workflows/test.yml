@@ -45,3 +45,4 @@ jobs:
           kustomizePath: "bar"
           deployImage: "nginx:latest"
           namespace: "testing"
+          forceDeploy: true
