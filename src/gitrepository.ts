@@ -1,4 +1,4 @@
-import {CustomObject, CustomObjectApiArgFactory} from './api'
+import {CustomObject, CustomObjectDefinition} from './api'
 
 export interface GitRepositorySpec {
   interval?: string
@@ -19,22 +19,16 @@ const GIT_SOURCE_API = `${GIT_SOURCE_API_GROUP}/${GIT_SOURCE_API_VERSION}`
 const GITREPO_PLURAL = 'gitrepositories'
 const GITREPO_KIND = 'GitRepository'
 
-export const gitRepository: CustomObjectApiArgFactory<GitRepositorySpec> = (
-  name: string,
-  namespace: string,
-  spec: GitRepositorySpec
-) => {
-  const group = GIT_SOURCE_API_GROUP
-  const version = GIT_SOURCE_API_VERSION
-  const kind = GITREPO_PLURAL
-  const payload: GitRepository = {
+export const gitRepository = (namespace: string): CustomObjectDefinition => {
+  return {
+    args: [
+      GIT_SOURCE_API_GROUP,
+      GIT_SOURCE_API_VERSION,
+      namespace,
+      GITREPO_PLURAL
+    ],
     apiVersion: GIT_SOURCE_API,
     kind: GITREPO_KIND,
-    metadata: {
-      name,
-      namespace
-    },
-    spec
+    namespace
   }
-  return [group, version, namespace, kind, payload]
 }

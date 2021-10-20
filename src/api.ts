@@ -10,6 +10,8 @@ export interface Api {
     namespace: string,
     path: string
   ): Promise<void>
+  waitNamespacedKustomization(name: string, namespace: string): Promise<void>
+
   createNamespacedGitRepository(
     name: string,
     namespace: string,
@@ -44,28 +46,35 @@ export interface CustomObject<Spec> {
   spec: Spec
 }
 
-export type CustomObjectApiArgFactory<Spec> = (
-  name: string,
-  namespace: string,
-  spec: Spec
-) => [
+export type CustomObjectApiArgs = [
   group: string,
   version: string,
   namespace: string,
-  kind: string,
-  data: CustomObject<Spec>
+  kind: string
 ]
 
-export type CustomObjectApiPatchFactory = (
-  name: string,
+export interface CustomObjectDefinition {
+  args: CustomObjectApiArgs
+  apiVersion: string
+  kind: string
   namespace: string
-) => [
-  group: string,
-  version: string,
-  namespace: string,
-  kind: string,
-  name: string
-]
+}
+
+function payload<Spec>(
+  name: string,
+  {apiVersion, kind, namespace}: CustomObjectDefinition,
+  spec: Spec
+): CustomObject<Spec> {
+  return {
+    apiVersion,
+    kind,
+    metadata: {
+      name,
+      namespace
+    },
+    spec
+  }
+}
 
 export function K8sApi(): Api {
   const kc = new k8s.KubeConfig()
@@ -73,6 +82,18 @@ export function K8sApi(): Api {
 
   const k8sApi = kc.makeApiClient(k8s.CoreV1Api)
   const customApi = kc.makeApiClient(k8s.CustomObjectsApi)
+
+  async function waitNamespacedKustomization(
+    name: string,
+    namespace: string
+  ): Promise<void> {
+    const res = await customApi.getNamespacedCustomObjectStatus(
+      ...kustomization(namespace).args,
+      name
+    )
+    console.log(JSON.stringify(res.body)) // eslint-disable-line no-console
+    // TODO read status in loop w/ sleep
+  }
 
   async function createNamespacedKustomization(
     name: string,
@@ -88,9 +109,10 @@ export function K8sApi(): Api {
         name
       }
     }
-
+    const k = kustomization(namespace)
     await customApi.createNamespacedCustomObject(
-      ...kustomization(name, namespace, spec)
+      ...k.args,
+      payload(name, k, spec)
     )
   }
 
@@ -103,7 +125,8 @@ export function K8sApi(): Api {
       headers: {'Content-type': k8s.PatchUtils.PATCH_FORMAT_JSON_PATCH}
     }
     await customApi.patchNamespacedCustomObject(
-      ...helmrelease(name, namespace),
+      ...helmrelease(namespace).args,
+      name,
       patch,
       undefined,
       undefined,
@@ -129,9 +152,10 @@ export function K8sApi(): Api {
         name: secretName
       }
     }
-
+    const g = gitRepository(namespace)
     await customApi.createNamespacedCustomObject(
-      ...gitRepository(name, namespace, spec)
+      ...g.args,
+      payload(name, g, spec)
     )
   }
 
@@ -149,6 +173,7 @@ export function K8sApi(): Api {
 
   return {
     createNamespacedKustomization,
+    waitNamespacedKustomization,
     createNamespacedGitRepository,
     createNamespace,
     deleteNamespace,

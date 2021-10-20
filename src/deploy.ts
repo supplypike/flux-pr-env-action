@@ -24,19 +24,19 @@ export function fluxDeploy(d: FluxDeployConfig): Deploy {
   const api = K8sApi()
 
   async function deploy(): Promise<void> {
-    core.info(`deploy:\n ${JSON.stringify(d)}`)
+    core.info(`deploying preview ${d.namespace}/${d.name}`)
 
-    core.info(`creating namespace ${d.namespace}`)
+    core.info(`creating Namespace`)
     await api.createNamespace(d.namespace)
 
-    core.info(`creating k11n`)
+    core.info(`creating Kustomization`)
     await api.createNamespacedKustomization(
       d.name,
       d.namespace,
       d.kustomization.path
     )
 
-    core.info(`creating git repo`)
+    core.info(`creating GitRepository`)
     await api.createNamespacedGitRepository(
       d.name,
       d.namespace,
@@ -44,6 +44,9 @@ export function fluxDeploy(d: FluxDeployConfig): Deploy {
       d.gitRepo.url,
       d.gitRepo.secretName
     )
+
+    core.info(`waiting for Kustomization`)
+    await api.waitNamespacedKustomization(d.name, d.namespace)
   }
   async function destroy(): Promise<void> {
     core.info(`removing namespace ${d.namespace}`)

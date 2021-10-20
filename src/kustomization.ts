@@ -1,4 +1,4 @@
-import {CustomObject, CustomObjectApiArgFactory} from './api'
+import {CustomObject, CustomObjectDefinition} from './api'
 
 export interface KustomizationSpec {
   interval?: string
@@ -18,25 +18,16 @@ const KUSTOMIZE_API = `${KUSTOMIZE_API_GROUP}/${KUSTOMIZE_API_VERSION}`
 const KUSTOMIZATION_PLURAL = 'kustomizations'
 const KUSTOMIZATION_KIND = 'Kustomization'
 
-export const kustomization: CustomObjectApiArgFactory<KustomizationSpec> = (
-  name: string,
-  namespace: string,
-  spec: KustomizationSpec
-): [string, string, string, string, Kustomization] => {
-  const payload: Kustomization = {
+export const kustomization = (namespace: string): CustomObjectDefinition => {
+  return {
+    args: [
+      KUSTOMIZE_API_GROUP,
+      KUSTOMIZE_API_VERSION,
+      namespace,
+      KUSTOMIZATION_PLURAL
+    ],
     apiVersion: KUSTOMIZE_API,
     kind: KUSTOMIZATION_KIND,
-    metadata: {
-      name,
-      namespace
-    },
-    spec
+    namespace
   }
-  return [
-    KUSTOMIZE_API_GROUP,
-    KUSTOMIZE_API_VERSION,
-    namespace,
-    KUSTOMIZATION_PLURAL,
-    payload
-  ]
 }

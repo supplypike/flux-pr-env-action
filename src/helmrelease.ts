@@ -1,4 +1,4 @@
-import {CustomObject, CustomObjectApiPatchFactory} from './api'
+import {CustomObject, CustomObjectDefinition} from './api'
 
 export interface HelmReleaseSpec {
   values: object
@@ -8,14 +8,15 @@ export type HelmRelease = CustomObject<HelmReleaseSpec>
 
 const HELM_API_GROUP = 'helm.toolkit.fluxcd.io'
 const HELM_API_VERSION = 'v2beta1'
+const HELM_API = `${HELM_API_GROUP}/${HELM_API_VERSION}`
 const HELMRELEASE_PLURAL = 'helmreleases'
+const HELMRELEASE_KIND = 'HelmRelease'
 
-export const helmrelease: CustomObjectApiPatchFactory = (
-  name: string,
-  namespace: string
-) => {
-  const group = HELM_API_GROUP
-  const version = HELM_API_VERSION
-  const kind = HELMRELEASE_PLURAL
-  return [group, version, namespace, kind, name]
+export const helmrelease = (namespace: string): CustomObjectDefinition => {
+  return {
+    args: [HELM_API_GROUP, HELM_API_VERSION, namespace, HELMRELEASE_PLURAL],
+    apiVersion: HELM_API,
+    kind: HELMRELEASE_KIND,
+    namespace
+  }
 }
