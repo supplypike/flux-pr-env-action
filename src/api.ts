@@ -1,8 +1,10 @@
+/* eslint-disable no-console */
 import * as k8s from '@kubernetes/client-node'
 
 import {kustomization, KustomizationSpec} from './kustomization'
 import {gitRepository, GitRepositorySpec} from './gitrepository'
 import {helmrelease} from './helmrelease'
+import {delay} from './utils'
 
 export interface Api {
   createNamespacedKustomization(
@@ -36,6 +38,18 @@ interface K8sPatch {
   }
 }
 
+interface K8sCondition {
+  lastTransitionTime: Date
+  message: string
+  reason: string
+  status: string
+  type: string
+}
+
+interface K8sStatus {
+  conditions?: K8sCondition[]
+}
+
 export interface CustomObject<Spec> {
   apiVersion: string
   kind: string
@@ -44,6 +58,10 @@ export interface CustomObject<Spec> {
     namespace: string
   }
   spec: Spec
+}
+
+export interface CustomObjectWithStatus<Spec> extends CustomObject<Spec> {
+  status?: K8sStatus
 }
 
 export type CustomObjectApiArgs = [
@@ -87,12 +105,48 @@ export function K8sApi(): Api {
     name: string,
     namespace: string
   ): Promise<void> {
-    const res = await customApi.getNamespacedCustomObjectStatus(
-      ...kustomization(namespace).args,
-      name
-    )
-    console.log(JSON.stringify(res.body)) // eslint-disable-line no-console
-    // TODO read status in loop w/ sleep
+    const RETRIES = 5
+    const RETRY_DELAY_SECONDS = 10
+
+    for (let i = 0; i < RETRIES; i++) {
+      if (i > 1) {
+        console.log(`Retrying in ${RETRY_DELAY_SECONDS} seconds...`)
+        await delay(RETRY_DELAY_SECONDS)
+      }
+      console.log(`TRY ${i + 1}`)
+
+      const res = await customApi.getNamespacedCustomObjectStatus(
+        ...kustomization(namespace).args,
+        name
+      )
+
+      if (!res.body.hasOwnProperty('metadata')) {
+        console.log('did not find metadata, check payload?')
+        console.log(JSON.stringify(res.body))
+        continue
+      }
+
+      const body = res.body as CustomObjectWithStatus<KustomizationSpec>
+      if (!body.status) {
+        console.log('did not find status')
+        console.log(JSON.stringify(body))
+        continue
+      }
+
+      const {conditions} = body.status
+      if (!conditions) {
+        console.log('did not find conditions')
+        console.log(JSON.stringify(body.status))
+        continue
+      }
+
+      for (const condition of conditions) {
+        if (condition.type === 'Ready' && condition.status === 'True') {
+          console.log('ready!')
+          return
+        }
+      }
+    }
   }
 
   async function createNamespacedKustomization(

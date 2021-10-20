@@ -1,4 +1,4 @@
-import {CustomObject, CustomObjectDefinition} from './api'
+import {CustomObjectDefinition} from './api'
 
 export interface GitRepositorySpec {
   interval?: string
@@ -10,8 +10,6 @@ export interface GitRepositorySpec {
     name: string
   }
 }
-
-export type GitRepository = CustomObject<GitRepositorySpec>
 
 const GIT_SOURCE_API_GROUP = 'source.toolkit.fluxcd.io'
 const GIT_SOURCE_API_VERSION = 'v1beta1'

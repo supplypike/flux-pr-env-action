@@ -1,10 +1,8 @@
-import {CustomObject, CustomObjectDefinition} from './api'
+import {CustomObjectDefinition} from './api'
 
 export interface HelmReleaseSpec {
   values: object
 }
-
-export type HelmRelease = CustomObject<HelmReleaseSpec>
 
 const HELM_API_GROUP = 'helm.toolkit.fluxcd.io'
 const HELM_API_VERSION = 'v2beta1'
