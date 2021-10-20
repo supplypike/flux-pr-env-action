@@ -4,12 +4,13 @@ import {HttpError} from '@kubernetes/client-node'
 import {PullRequestEvent} from '@octokit/webhooks-types' // eslint-disable-line import/no-unresolved
 import {fluxDeploy} from './deploy'
 
-import {slugPrContext} from './slug'
+import {slugPrContext, slugurlref} from './slug'
 import {getInputRequired} from './utils'
 
 const INPUT_KUSTOMIZE_PATH = 'kustomizePath'
 const INPUT_REPO_SECRET = 'repoSecret'
 const INPUT_DEPLOY_IMAGE = 'deployImage'
+const INPUT_NAMESPACE = 'namespace'
 
 async function run(): Promise<void> {
   try {
@@ -19,10 +20,12 @@ async function run(): Promise<void> {
     const payload = github.context.payload as PullRequestEvent
     const kPath = getInputRequired(INPUT_KUSTOMIZE_PATH)
     const gitSecret = getInputRequired(INPUT_REPO_SECRET)
-    const {branch, namespace, ssh_url, action} = slugPrContext(payload)
+    const namespace = getInputRequired(INPUT_NAMESPACE)
+    const {branch, sshUrl, action, repoName} = slugPrContext(payload)
+    const name = slugurlref(`${repoName}-${branch}`)
 
     const deploy = fluxDeploy({
-      name: namespace,
+      name,
       namespace,
       kustomization: {
         path: kPath
@@ -30,7 +33,7 @@ async function run(): Promise<void> {
       gitRepo: {
         branch,
         secretName: gitSecret,
-        url: ssh_url
+        url: sshUrl
       }
     })
 

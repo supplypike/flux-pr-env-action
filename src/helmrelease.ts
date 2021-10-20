@@ -1,20 +1,21 @@
-interface HelmReleaseSpec {
-  values: any // eslint-disable-line @typescript-eslint/no-explicit-any
+import {CustomObject, CustomObjectApiPatchFactory} from './api'
+
+export interface HelmReleaseSpec {
+  values: object
 }
 
-export interface HelmRelease {
-  metadata?: {
-    name: string
-    namespace: string
-  }
-  spec: HelmReleaseSpec
-}
+export type HelmRelease = CustomObject<HelmReleaseSpec>
 
-export const helmrelease = (
+const HELM_API_GROUP = 'helm.toolkit.fluxcd.io'
+const HELM_API_VERSION = 'v2beta1'
+const HELMRELEASE_PLURAL = 'helmreleases'
+
+export const helmrelease: CustomObjectApiPatchFactory = (
+  name: string,
   namespace: string
-): [string, string, string, string] => {
-  const group = 'helm.toolkit.fluxcd.io'
-  const version = 'v2beta1'
-  const kind = 'helmreleases'
-  return [group, version, namespace, kind]
+) => {
+  const group = HELM_API_GROUP
+  const version = HELM_API_VERSION
+  const kind = HELMRELEASE_PLURAL
+  return [group, version, namespace, kind, name]
 }

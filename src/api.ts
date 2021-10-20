@@ -1,7 +1,7 @@
 import * as k8s from '@kubernetes/client-node'
 
-import {Kustomization, kustomization} from './kustomization'
-import {GitRepository, gitRepository} from './gitrepository'
+import {kustomization, KustomizationSpec} from './kustomization'
+import {gitRepository, GitRepositorySpec} from './gitrepository'
 import {helmrelease} from './helmrelease'
 
 export interface Api {
@@ -34,6 +34,39 @@ interface K8sPatch {
   }
 }
 
+export interface CustomObject<Spec> {
+  apiVersion: string
+  kind: string
+  metadata: {
+    name: string
+    namespace: string
+  }
+  spec: Spec
+}
+
+export type CustomObjectApiArgFactory<Spec> = (
+  name: string,
+  namespace: string,
+  spec: Spec
+) => [
+  group: string,
+  version: string,
+  namespace: string,
+  kind: string,
+  data: CustomObject<Spec>
+]
+
+export type CustomObjectApiPatchFactory = (
+  name: string,
+  namespace: string
+) => [
+  group: string,
+  version: string,
+  namespace: string,
+  kind: string,
+  name: string
+]
+
 export function K8sApi(): Api {
   const kc = new k8s.KubeConfig()
   kc.loadFromDefault()
@@ -46,24 +79,18 @@ export function K8sApi(): Api {
     namespace: string,
     path: string
   ): Promise<void> {
-    const payload: Kustomization = {
-      metadata: {
-        name,
-        namespace
-      },
-      spec: {
-        interval: '1m0s',
-        path,
-        prune: true,
-        sourceRef: {
-          kind: 'GitRepository',
-          name
-        }
+    const spec: KustomizationSpec = {
+      interval: '1m0s',
+      path,
+      prune: true,
+      sourceRef: {
+        kind: 'GitRepository',
+        name
       }
     }
+
     await customApi.createNamespacedCustomObject(
-      ...kustomization(namespace),
-      payload
+      ...kustomization(name, namespace, spec)
     )
   }
 
@@ -76,8 +103,7 @@ export function K8sApi(): Api {
       headers: {'Content-type': k8s.PatchUtils.PATCH_FORMAT_JSON_PATCH}
     }
     await customApi.patchNamespacedCustomObject(
-      ...helmrelease(namespace),
-      name,
+      ...helmrelease(name, namespace),
       patch,
       undefined,
       undefined,
@@ -93,25 +119,19 @@ export function K8sApi(): Api {
     url: string,
     secretName: string
   ): Promise<void> {
-    const payload: GitRepository = {
-      metadata: {
-        name,
-        namespace
+    const spec: GitRepositorySpec = {
+      interval: '1m0s',
+      ref: {
+        branch
       },
-      spec: {
-        interval: '1m0s',
-        ref: {
-          branch
-        },
-        url,
-        secretRef: {
-          name: secretName
-        }
+      url,
+      secretRef: {
+        name: secretName
       }
     }
+
     await customApi.createNamespacedCustomObject(
-      ...gitRepository(namespace),
-      payload
+      ...gitRepository(name, namespace, spec)
     )
   }
 

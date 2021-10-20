@@ -100,26 +100,22 @@ export function removeRef(envVar: string): string {
 }
 
 interface PullRequestContext {
-  name: string
+  repoName: string
   branch: string
-  namespace: string
-  ssh_url: string
+  sshUrl: string
   action: PullRequestEvent['action']
 }
 
 export function slugPrContext(payload: PullRequestEvent): PullRequestContext {
   const action = payload.action
-  const head_ref = payload.pull_request.head.ref
-  const name = payload.pull_request.head.repo.name
-  const branch = slugurlref(head_ref)
-  const namespace = slugurl(`${name}-${branch}`)
-  const ssh_url = payload.pull_request.head.repo.ssh_url
+  const repoName = payload.pull_request.head.repo.name
+  const branch = slugurlref(payload.pull_request.head.ref)
+  const sshUrl = payload.pull_request.head.repo.ssh_url
 
   return {
-    name,
+    repoName,
     branch,
-    namespace,
-    ssh_url,
+    sshUrl,
     action
   }
 }
