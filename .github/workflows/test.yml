@@ -44,3 +44,4 @@ jobs:
           repoSecret: "foo"
           kustomizePath: "bar"
           deployImage: "nginx:latest"
+          namespace: "testing"
