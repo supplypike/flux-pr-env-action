@@ -106,14 +106,33 @@ export function K8sApi(): Api {
   const customApi = kc.makeApiClient(k8s.CustomObjectsApi)
   const k8sWatch = new k8s.Watch(kc)
 
+  function checkCondition<T>(
+    obj: CustomObjectWithStatus<T>,
+    conditionType: string
+  ): boolean {
+    const conditions = obj.status?.conditions
+    if (!conditions) {
+      return false
+    }
+
+    for (const condition of conditions) {
+      if (condition.type === conditionType && condition.status === 'True') {
+        return true
+      }
+    }
+
+    return false
+  }
+
   async function watch<T>(
     name: string,
-    def: CustomObjectDefinition
-  ): Promise<T> {
+    def: CustomObjectDefinition,
+    isDone: (obj: T) => boolean
+  ): Promise<void> {
     const watchUri = `${customObjectUri(def, name)}`
 
     console.log(`watchUri: ${watchUri}`)
-    return new Promise<T>((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       k8sWatch
         .watch(
           watchUri,
@@ -136,10 +155,11 @@ export function K8sApi(): Api {
               console.log(`unknown type: ${type}`)
             }
             // tslint:disable-next-line:no-console
-            console.log(apiObj)
+            console.log({type, apiObj, watchObj})
 
-            //TODO resolve
-            resolve(watchObj as T)
+            if (isDone(watchObj as T)) {
+              resolve()
+            }
           },
           // done callback is called if the watch terminates normally
           () => {
@@ -195,39 +215,13 @@ export function K8sApi(): Api {
     name: string,
     namespace: string
   ): Promise<void> {
-    const watchUri = `${customObjectUri(kustomization(namespace), name)}`
+    const watchUri = `${customObjectUri(kustomization(namespace), name)}/status`
     console.log(`watchUri: ${watchUri}`)
-    const k: CustomObject<KustomizationSpec> = await watch(
+    await watch<CustomObjectWithStatus<KustomizationSpec>>(
       name,
-      kustomization(namespace)
+      kustomization(namespace),
+      obj => checkCondition(obj, 'Ready')
     )
-    console.log(`found k:\n ${JSON.stringify(k)}`)
-    // if (!res.body.hasOwnProperty('metadata')) {
-    //   console.log('did not find metadata, check payload?')
-    //   console.log(JSON.stringify(res.body))
-    //   continue
-    // }
-
-    // const body = res.body as CustomObjectWithStatus<KustomizationSpec>
-    // if (!body.status) {
-    //   console.log('did not find status')
-    //   console.log(JSON.stringify(body))
-    //   continue
-    // }
-
-    // const {conditions} = body.status
-    // if (!conditions) {
-    //   console.log('did not find conditions')
-    //   console.log(JSON.stringify(body.status))
-    //   continue
-    // }
-
-    // for (const condition of conditions) {
-    //   if (condition.type === 'Ready' && condition.status === 'True') {
-    //     console.log('ready!')
-    //     return
-    //   }
-    // }
   }
 
   async function createNamespacedKustomization(
