@@ -13,20 +13,12 @@ export interface GitRepositorySpec {
 
 const GIT_SOURCE_API_GROUP = 'source.toolkit.fluxcd.io'
 const GIT_SOURCE_API_VERSION = 'v1beta1'
-const GIT_SOURCE_API = `${GIT_SOURCE_API_GROUP}/${GIT_SOURCE_API_VERSION}`
 const GITREPO_PLURAL = 'gitrepositories'
 const GITREPO_KIND = 'GitRepository'
 
-export const gitRepository = (namespace: string): CustomObjectDefinition => {
-  return {
-    args: [
-      GIT_SOURCE_API_GROUP,
-      GIT_SOURCE_API_VERSION,
-      namespace,
-      GITREPO_PLURAL
-    ],
-    apiVersion: GIT_SOURCE_API,
-    kind: GITREPO_KIND,
-    namespace
-  }
+export const gitRepository: CustomObjectDefinition = {
+  group: GIT_SOURCE_API_GROUP,
+  version: GIT_SOURCE_API_VERSION,
+  kind: GITREPO_KIND,
+  plural: GITREPO_PLURAL
 }

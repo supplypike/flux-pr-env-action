@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import * as k8s from '@kubernetes/client-node'
 
 import {kustomization, KustomizationSpec} from './kustomization'
@@ -11,7 +10,6 @@ export interface Api {
     namespace: string,
     path: string
   ): Promise<void>
-  waitNamespacedKustomization(name: string, namespace: string): Promise<void>
 
   createNamespacedGitRepository(
     name: string,
@@ -71,24 +69,28 @@ export type CustomObjectApiArgs = [
 ]
 
 export interface CustomObjectDefinition {
-  args: CustomObjectApiArgs
-  apiVersion: string
+  group: string
+  version: string
+  plural: string
   kind: string
-  namespace: string
 }
 
-function customObjectUri(def: CustomObjectDefinition, name: string): string {
-  const [group, version, namespace, kind] = def.args
-  return `/apis/${group}/${version}/namespaces/${namespace}/${kind}/${name}`
+function namespacedCustomObjectArgs(
+  namespace: string,
+  o: CustomObjectDefinition
+): CustomObjectApiArgs {
+  const {group, version, plural} = o
+  return [group, version, namespace, plural]
 }
 
 function payload<Spec>(
   name: string,
-  {apiVersion, kind, namespace}: CustomObjectDefinition,
+  namespace: string,
+  {group, version, kind}: CustomObjectDefinition,
   spec: Spec
 ): CustomObject<Spec> {
   return {
-    apiVersion,
+    apiVersion: `${group}/${version}`,
     kind,
     metadata: {
       name,
@@ -104,126 +106,13 @@ export function K8sApi(): Api {
 
   const k8sApi = kc.makeApiClient(k8s.CoreV1Api)
   const customApi = kc.makeApiClient(k8s.CustomObjectsApi)
-  const k8sWatch = new k8s.Watch(kc)
-
-  function checkCondition<T>(
-    obj: CustomObjectWithStatus<unknown>,
-    conditionType: string,
-    conditionStatus: string
-  ): boolean {
-    const conditions = obj.status?.conditions
-    if (!conditions) {
-      return false
-    }
-
-    for (const condition of conditions) {
-      console.log(condition)
-      if (condition.type === conditionType && condition.status === conditionStatus) {
-        return true
-      }
-    }
-
-    return false
-  }
-
-  async function waitForCondition(
-    uri: string,
-    conditionType: string,
-    conditionStatus: string,
-    attempts = 10,
-  ): Promise<void> {
-    for (let i=1; i<=attempts; i++) {
-      try {
-        await watch(uri, obj => {
-          return checkCondition(obj, conditionType, conditionStatus)
-        })
-      } catch(error) {
-        throw new Error(`Failed waiting for condition ${conditionType} ${conditionStatus} on resource ${uri}\n${error}`)
-      }
-    }
-  }
-
-  async function watch(
-    uri: string,
-    isDone: (obj: CustomObjectWithStatus<unknown>) => boolean
-  ): Promise<void> {
-    return new Promise<void>((resolve, reject) => {
-      k8sWatch
-        .watch(
-          uri,
-          {},
-          (type, apiObj, watchObj) => {
-            console.log({type, apiObj, watchObj})
-            resolve(watchObj)
-          },
-          // done callback is called if the watch terminates normally
-          () => {
-            console.log('done')
-            reject(new Error('done but no watch'))
-          },
-          err => {
-            console.log('watch err', err)
-            reject(err)
-          }
-        )
-        // eslint-disable-next-line github/no-then
-        .then(req => {
-          setTimeout(() => {
-            req.abort()
-            reject(new Error('aborted watch'))
-          }, 60 * 1000)
-        })
-    })
-
-    // if (!res.body.hasOwnProperty('metadata')) {
-    //   console.log('did not find metadata, check payload?')
-    //   console.log(JSON.stringify(res.body))
-    //   continue
-    // }
-
-    // const body = res.body as CustomObjectWithStatus<KustomizationSpec>
-    // if (!body.status) {
-    //   console.log('did not find status')
-    //   console.log(JSON.stringify(body))
-    //   continue
-    // }
-
-    // const {conditions} = body.status
-    // if (!conditions) {
-    //   console.log('did not find conditions')
-    //   console.log(JSON.stringify(body.status))
-    //   continue
-    // }
-
-    // for (const condition of conditions) {
-    //   if (condition.type === 'Ready' && condition.status === 'True') {
-    //     console.log('ready!')
-    //     return
-    //   }
-    // }
-  }
-
-  async function waitNamespacedKustomization(
-    name: string,
-    namespace: string
-  ): Promise<void> {
-    const watchUri = `${customObjectUri(kustomization(namespace), name)}`
-    console.log(`watchUri: ${watchUri}`)
- 
-      await watch<CustomObjectWithStatus<KustomizationSpec>>(watchUri, obj => {
-        checkCondition(obj, 'Ready')
-      }
-        
-      )
-    }
-    
-  }
 
   async function createNamespacedKustomization(
     name: string,
     namespace: string,
     path: string
   ): Promise<void> {
+    // this is a bit implementation specific :(
     const spec: KustomizationSpec = {
       interval: '1m0s',
       path,
@@ -231,12 +120,28 @@ export function K8sApi(): Api {
       sourceRef: {
         kind: 'GitRepository',
         name
-      }
+      },
+      patches: [
+        {
+          patch: [
+            {
+              op: 'replace',
+              path: '/spec/values/image/tag',
+              value: '' // TODO
+            }
+          ],
+          target: {
+            group: helmrelease.group,
+            version: helmrelease.version,
+            kind: helmrelease.kind,
+            name
+          }
+        }
+      ]
     }
-    const k = kustomization(namespace)
     await customApi.createNamespacedCustomObject(
-      ...k.args,
-      payload(name, k, spec)
+      ...namespacedCustomObjectArgs(namespace, kustomization),
+      payload(name, namespace, kustomization, spec)
     )
   }
 
@@ -249,7 +154,7 @@ export function K8sApi(): Api {
       headers: {'Content-type': k8s.PatchUtils.PATCH_FORMAT_JSON_PATCH}
     }
     await customApi.patchNamespacedCustomObject(
-      ...helmrelease(namespace).args,
+      ...namespacedCustomObjectArgs(namespace, helmrelease),
       name,
       patch,
       undefined,
@@ -276,10 +181,10 @@ export function K8sApi(): Api {
         name: secretName
       }
     }
-    const g = gitRepository(namespace)
+
     await customApi.createNamespacedCustomObject(
-      ...g.args,
-      payload(name, g, spec)
+      ...namespacedCustomObjectArgs(namespace, gitRepository),
+      payload(name, namespace, gitRepository, spec)
     )
   }
 
@@ -297,7 +202,6 @@ export function K8sApi(): Api {
 
   return {
     createNamespacedKustomization,
-    waitNamespacedKustomization,
     createNamespacedGitRepository,
     createNamespace,
     deleteNamespace,
