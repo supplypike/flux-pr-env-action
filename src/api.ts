@@ -104,52 +104,104 @@ export function K8sApi(): Api {
 
   const k8sApi = kc.makeApiClient(k8s.CoreV1Api)
   const customApi = kc.makeApiClient(k8s.CustomObjectsApi)
-  const watch = new k8s.Watch(kc)
+  const k8sWatch = new k8s.Watch(kc)
+
+  async function watch<T>(
+    name: string,
+    def: CustomObjectDefinition
+  ): Promise<T> {
+    const watchUri = `${customObjectUri(def, name)}`
+
+    console.log(`watchUri: ${watchUri}`)
+    return new Promise<T>((resolve, reject) => {
+      k8sWatch
+        .watch(
+          watchUri,
+          {},
+          (type, apiObj, watchObj) => {
+            if (type === 'ADDED') {
+              // tslint:disable-next-line:no-console
+              console.log('new object:')
+            } else if (type === 'MODIFIED') {
+              // tslint:disable-next-line:no-console
+              console.log('changed object:')
+            } else if (type === 'DELETED') {
+              // tslint:disable-next-line:no-console
+              console.log('deleted object:')
+            } else if (type === 'BOOKMARK') {
+              // tslint:disable-next-line:no-console
+              console.log(`bookmark: ${watchObj.metadata.resourceVersion}`)
+            } else {
+              // tslint:disable-next-line:no-console
+              console.log(`unknown type: ${type}`)
+            }
+            // tslint:disable-next-line:no-console
+            console.log(apiObj)
+
+            //TODO resolve
+            resolve(watchObj as T)
+          },
+          // done callback is called if the watch terminates normally
+          () => {
+            // tslint:disable-next-line:no-console
+            console.log('done')
+            reject(new Error('done but no watch'))
+          },
+          err => {
+            // tslint:disable-next-line:no-console
+            console.log(err)
+            reject(err)
+          }
+        )
+        // eslint-disable-next-line github/no-then
+        .then(req => {
+          // watch returns a request object which you can use to abort the watch.
+          setTimeout(() => {
+            req.abort()
+            reject(new Error('aborted'))
+          }, 10 * 1000)
+        })
+    })
+
+    // if (!res.body.hasOwnProperty('metadata')) {
+    //   console.log('did not find metadata, check payload?')
+    //   console.log(JSON.stringify(res.body))
+    //   continue
+    // }
+
+    // const body = res.body as CustomObjectWithStatus<KustomizationSpec>
+    // if (!body.status) {
+    //   console.log('did not find status')
+    //   console.log(JSON.stringify(body))
+    //   continue
+    // }
+
+    // const {conditions} = body.status
+    // if (!conditions) {
+    //   console.log('did not find conditions')
+    //   console.log(JSON.stringify(body.status))
+    //   continue
+    // }
+
+    // for (const condition of conditions) {
+    //   if (condition.type === 'Ready' && condition.status === 'True') {
+    //     console.log('ready!')
+    //     return
+    //   }
+    // }
+  }
 
   async function waitNamespacedKustomization(
     name: string,
     namespace: string
   ): Promise<void> {
-    const watchUri = `${customObjectUri(kustomization(namespace), name)}/status`
-    const req = await watch.watch(
-      watchUri,
-      {},
-      (type, apiObj, watchObj) => {
-        if (type === 'ADDED') {
-          // tslint:disable-next-line:no-console
-          console.log('new object:')
-        } else if (type === 'MODIFIED') {
-          // tslint:disable-next-line:no-console
-          console.log('changed object:')
-        } else if (type === 'DELETED') {
-          // tslint:disable-next-line:no-console
-          console.log('deleted object:')
-        } else if (type === 'BOOKMARK') {
-          // tslint:disable-next-line:no-console
-          console.log(`bookmark: ${watchObj.metadata.resourceVersion}`)
-        } else {
-          // tslint:disable-next-line:no-console
-          console.log(`unknown type: ${type}`)
-        }
-        // tslint:disable-next-line:no-console
-        console.log(apiObj)
-      },
-      // done callback is called if the watch terminates normally
-      () => {
-        // tslint:disable-next-line:no-console
-        console.log('done')
-      },
-      err => {
-        // tslint:disable-next-line:no-console
-        console.log(err)
-      }
+    const watchUri = `${customObjectUri(kustomization(namespace), name)}`
+    console.log(`watchUri: ${watchUri}`)
+    const k: CustomObject<KustomizationSpec> = await watch(
+      name,
+      kustomization(namespace)
     )
-
-    // watch returns a request object which you can use to abort the watch.
-    setTimeout(() => {
-      req.abort()
-    }, 10 * 1000)
-
+    console.log(`found k:\n ${JSON.stringify(k)}`)
     // if (!res.body.hasOwnProperty('metadata')) {
     //   console.log('did not find metadata, check payload?')
     //   console.log(JSON.stringify(res.body))

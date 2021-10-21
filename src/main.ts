@@ -44,10 +44,11 @@ async function run(): Promise<void> {
 
     if (action === 'closed') {
       await deploy.destroy()
-    } else {
-      const deployImage = getInputRequired(INPUT_DEPLOY_IMAGE)
-      await deploy.rollout(deployImage)
+      return
     }
+
+    const deployImage = getInputRequired(INPUT_DEPLOY_IMAGE)
+    await deploy.rollout(deployImage)
   } catch (error) {
     if (error instanceof HttpError) {
       core.info(`HttpError ${error.statusCode}: ${JSON.stringify(error.body)}`)
