@@ -107,8 +107,9 @@ export function K8sApi(): Api {
   const k8sWatch = new k8s.Watch(kc)
 
   function checkCondition<T>(
-    obj: CustomObjectWithStatus<T>,
-    conditionType: string
+    obj: CustomObjectWithStatus<unknown>,
+    conditionType: string,
+    conditionStatus: string
   ): boolean {
     const conditions = obj.status?.conditions
     if (!conditions) {
@@ -116,7 +117,8 @@ export function K8sApi(): Api {
     }
 
     for (const condition of conditions) {
-      if (condition.type === conditionType && condition.status === 'True') {
+      console.log(condition)
+      if (condition.type === conditionType && condition.status === conditionStatus) {
         return true
       }
     }
@@ -124,62 +126,52 @@ export function K8sApi(): Api {
     return false
   }
 
-  async function watch<T>(
-    name: string,
-    def: CustomObjectDefinition,
-    isDone: (obj: T) => boolean
+  async function waitForCondition(
+    uri: string,
+    conditionType: string,
+    conditionStatus: string,
+    attempts = 10,
   ): Promise<void> {
-    const watchUri = `${customObjectUri(def, name)}`
+    for (let i=1; i<=attempts; i++) {
+      try {
+        await watch(uri, obj => {
+          return checkCondition(obj, conditionType, conditionStatus)
+        })
+      } catch(error) {
+        throw new Error(`Failed waiting for condition ${conditionType} ${conditionStatus} on resource ${uri}\n${error}`)
+      }
+    }
+  }
 
-    console.log(`watchUri: ${watchUri}`)
+  async function watch(
+    uri: string,
+    isDone: (obj: CustomObjectWithStatus<unknown>) => boolean
+  ): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       k8sWatch
         .watch(
-          watchUri,
+          uri,
           {},
           (type, apiObj, watchObj) => {
-            if (type === 'ADDED') {
-              // tslint:disable-next-line:no-console
-              console.log('new object:')
-            } else if (type === 'MODIFIED') {
-              // tslint:disable-next-line:no-console
-              console.log('changed object:')
-            } else if (type === 'DELETED') {
-              // tslint:disable-next-line:no-console
-              console.log('deleted object:')
-            } else if (type === 'BOOKMARK') {
-              // tslint:disable-next-line:no-console
-              console.log(`bookmark: ${watchObj.metadata.resourceVersion}`)
-            } else {
-              // tslint:disable-next-line:no-console
-              console.log(`unknown type: ${type}`)
-            }
-            // tslint:disable-next-line:no-console
             console.log({type, apiObj, watchObj})
-
-            if (isDone(watchObj as T)) {
-              resolve()
-            }
+            resolve(watchObj)
           },
           // done callback is called if the watch terminates normally
           () => {
-            // tslint:disable-next-line:no-console
             console.log('done')
             reject(new Error('done but no watch'))
           },
           err => {
-            // tslint:disable-next-line:no-console
-            console.log(err)
+            console.log('watch err', err)
             reject(err)
           }
         )
         // eslint-disable-next-line github/no-then
         .then(req => {
-          // watch returns a request object which you can use to abort the watch.
           setTimeout(() => {
             req.abort()
-            reject(new Error('aborted'))
-          }, 10 * 1000)
+            reject(new Error('aborted watch'))
+          }, 60 * 1000)
         })
     })
 
@@ -215,13 +207,16 @@ export function K8sApi(): Api {
     name: string,
     namespace: string
   ): Promise<void> {
-    const watchUri = `${customObjectUri(kustomization(namespace), name)}/status`
+    const watchUri = `${customObjectUri(kustomization(namespace), name)}`
     console.log(`watchUri: ${watchUri}`)
-    await watch<CustomObjectWithStatus<KustomizationSpec>>(
-      name,
-      kustomization(namespace),
-      obj => checkCondition(obj, 'Ready')
-    )
+ 
+      await watch<CustomObjectWithStatus<KustomizationSpec>>(watchUri, obj => {
+        checkCondition(obj, 'Ready')
+      }
+        
+      )
+    }
+    
   }
 
   async function createNamespacedKustomization(
