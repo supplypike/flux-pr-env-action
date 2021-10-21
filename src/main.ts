@@ -36,10 +36,12 @@ async function run(): Promise<void> {
         url: cloneUrl
       }
     })
-
+    const deployImage = getInputRequired(INPUT_DEPLOY_IMAGE)
     const forceDeploy = core.getBooleanInput('forceDeploy')
+
     if (action === 'opened' || action === 'reopened' || forceDeploy) {
-      await deploy.deploy()
+      await deploy.deploy(deployImage)
+      return
     }
 
     if (action === 'closed') {
@@ -47,7 +49,6 @@ async function run(): Promise<void> {
       return
     }
 
-    const deployImage = getInputRequired(INPUT_DEPLOY_IMAGE)
     await deploy.rollout(deployImage)
   } catch (error) {
     if (error instanceof HttpError) {

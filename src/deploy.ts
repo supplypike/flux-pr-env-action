@@ -1,5 +1,8 @@
 import * as core from '@actions/core'
 import {K8sApi} from './api'
+import {GitRepositorySpec} from './gitrepository'
+import {helmrelease} from './helmrelease'
+import {KustomizationSpec} from './kustomization'
 
 export interface FluxDeployConfig {
   name: string
@@ -15,7 +18,7 @@ export interface FluxDeployConfig {
 }
 
 export interface Deploy {
-  deploy(): Promise<void>
+  deploy(image: string): Promise<void>
   destroy(): Promise<void>
   rollout(image: string): Promise<void>
 }
@@ -23,30 +26,53 @@ export interface Deploy {
 export function fluxDeploy(d: FluxDeployConfig): Deploy {
   const api = K8sApi()
 
-  async function deploy(): Promise<void> {
+  async function deploy(image: string): Promise<void> {
     core.info(`deploying preview ${d.namespace}/${d.name}`)
 
     core.info(`creating Namespace`)
     await api.createNamespace(d.namespace)
 
     core.info(`creating Kustomization`)
-    await api.createNamespacedKustomization(
-      d.name,
-      d.namespace,
-      d.kustomization.path
-    )
+    const kustomization: KustomizationSpec = {
+      interval: '1m0s',
+      path: d.kustomization.path,
+      prune: true,
+      sourceRef: {
+        kind: 'GitRepository',
+        name: d.name
+      },
+      patches: [
+        {
+          patch: [
+            {
+              op: 'replace',
+              path: '/spec/values/image',
+              value: image
+            }
+          ],
+          target: {
+            group: helmrelease.group,
+            version: helmrelease.version,
+            kind: helmrelease.kind,
+            name: d.name
+          }
+        }
+      ]
+    }
+    await api.createNamespacedKustomization(d.name, d.namespace, kustomization)
 
     core.info(`creating GitRepository`)
-    await api.createNamespacedGitRepository(
-      d.name,
-      d.namespace,
-      d.gitRepo.branch,
-      d.gitRepo.url,
-      d.gitRepo.secretName
-    )
-
-    core.info(`waiting for Kustomization`)
-    await api.waitNamespacedKustomization(d.name, d.namespace)
+    const gitRepo: GitRepositorySpec = {
+      interval: '1m0s',
+      ref: {
+        branch: d.gitRepo.branch
+      },
+      url: d.gitRepo.url,
+      secretRef: {
+        name: d.gitRepo.secretName
+      }
+    }
+    await api.createNamespacedGitRepository(d.name, d.namespace, gitRepo)
   }
   async function destroy(): Promise<void> {
     core.info(`removing namespace ${d.namespace}`)

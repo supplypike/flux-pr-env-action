@@ -8,15 +8,13 @@ export interface Api {
   createNamespacedKustomization(
     name: string,
     namespace: string,
-    path: string
+    spec: KustomizationSpec
   ): Promise<void>
 
   createNamespacedGitRepository(
     name: string,
     namespace: string,
-    branch: string,
-    url: string,
-    secretName: string
+    spec: GitRepositorySpec
   ): Promise<void>
   patchNamespacedHelmRelease(
     name: string,
@@ -110,35 +108,8 @@ export function K8sApi(): Api {
   async function createNamespacedKustomization(
     name: string,
     namespace: string,
-    path: string
+    spec: KustomizationSpec
   ): Promise<void> {
-    // this is a bit implementation specific :(
-    const spec: KustomizationSpec = {
-      interval: '1m0s',
-      path,
-      prune: true,
-      sourceRef: {
-        kind: 'GitRepository',
-        name
-      },
-      patches: [
-        {
-          patch: [
-            {
-              op: 'replace',
-              path: '/spec/values/image/tag',
-              value: '' // TODO
-            }
-          ],
-          target: {
-            group: helmrelease.group,
-            version: helmrelease.version,
-            kind: helmrelease.kind,
-            name
-          }
-        }
-      ]
-    }
     await customApi.createNamespacedCustomObject(
       ...namespacedCustomObjectArgs(namespace, kustomization),
       payload(name, namespace, kustomization, spec)
@@ -167,21 +138,8 @@ export function K8sApi(): Api {
   async function createNamespacedGitRepository(
     name: string,
     namespace: string,
-    branch: string,
-    url: string,
-    secretName: string
+    spec: GitRepositorySpec
   ): Promise<void> {
-    const spec: GitRepositorySpec = {
-      interval: '1m0s',
-      ref: {
-        branch
-      },
-      url,
-      secretRef: {
-        name: secretName
-      }
-    }
-
     await customApi.createNamespacedCustomObject(
       ...namespacedCustomObjectArgs(namespace, gitRepository),
       payload(name, namespace, gitRepository, spec)
