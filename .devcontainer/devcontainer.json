@@ -32,6 +32,7 @@
 	// Comment out connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
 	"remoteUser": "node",
 	"features": {
-		"kubectl-helm-minikube": "latest"
+		"kubectl-helm-minikube": "latest",
+		"docker-in-docker": "latest"
 	}
 }

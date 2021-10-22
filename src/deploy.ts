@@ -1,4 +1,7 @@
 import * as core from '@actions/core'
+// eslint-disable-next-line import/no-unresolved
+import {PullRequestEvent} from '@octokit/webhooks-types'
+
 import {K8sApi} from './api'
 import {GitRepositorySpec} from './gitrepository'
 import {helmrelease} from './helmrelease'
@@ -15,19 +18,43 @@ export interface FluxDeployConfig {
     secretName: string
     url: string
   }
+  image: string
 }
 
 export interface Deploy {
-  deploy(image: string): Promise<void>
+  deploy(): Promise<void>
   destroy(): Promise<void>
-  rollout(image: string): Promise<void>
+  rollout(): Promise<void>
+}
+
+export async function handleDeployForAction(
+  action: PullRequestEvent['action'],
+  deploy: Deploy,
+  force = false
+): Promise<void> {
+  if (force || action === 'opened' || action === 'reopened') {
+    await deploy.deploy()
+    return
+  }
+
+  if (action === 'closed') {
+    await deploy.destroy()
+    return
+  }
+
+  if (action === 'synchronize') {
+    await deploy.rollout()
+    return
+  }
 }
 
 export function fluxDeploy(d: FluxDeployConfig): Deploy {
   const api = K8sApi()
 
-  async function deploy(image: string): Promise<void> {
-    core.info(`deploying preview ${d.namespace}/${d.name}`)
+  async function deploy(): Promise<void> {
+    core.info(
+      `deploying preview ${d.namespace}/${d.name} with image ${d.image}`
+    )
 
     core.info(`creating Namespace`)
     await api.createNamespace(d.namespace)
@@ -46,7 +73,7 @@ export function fluxDeploy(d: FluxDeployConfig): Deploy {
           patch: `
             - op: replace
               path: /spec/values/image'
-              value: ${image}
+              value: ${d.image}
           `,
           target: {
             group: helmrelease.group,
@@ -77,15 +104,15 @@ export function fluxDeploy(d: FluxDeployConfig): Deploy {
     await api.deleteNamespace(d.namespace)
   }
 
-  async function rollout(image: string): Promise<void> {
-    core.info(`rollout image ${image}`)
+  async function rollout(): Promise<void> {
+    core.info(`rollout image ${d.image}`)
 
     const patch = [
       {
         op: 'replace',
         path: '/spec/values/deployment',
         value: {
-          image
+          image: d.image
         }
       }
     ]

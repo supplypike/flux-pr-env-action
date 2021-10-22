@@ -2,7 +2,7 @@ import * as core from '@actions/core'
 import * as github from '@actions/github'
 import {HttpError} from '@kubernetes/client-node'
 import {PullRequestEvent} from '@octokit/webhooks-types' // eslint-disable-line import/no-unresolved
-import {fluxDeploy} from './deploy'
+import {fluxDeploy, handleDeployForAction} from './deploy'
 
 import {slugPrContext, slugurlref} from './slug'
 import {getInputRequired} from './utils'
@@ -21,6 +21,7 @@ async function run(): Promise<void> {
     const kPath = getInputRequired(INPUT_KUSTOMIZE_PATH)
     const gitSecret = getInputRequired(INPUT_REPO_SECRET)
     const namespace = getInputRequired(INPUT_NAMESPACE)
+    const deployImage = getInputRequired(INPUT_DEPLOY_IMAGE)
     const {branch, cloneUrl, action, repoName} = slugPrContext(payload)
     const name = slugurlref(`${repoName}-${branch}`)
 
@@ -34,22 +35,11 @@ async function run(): Promise<void> {
         branch,
         secretName: gitSecret,
         url: cloneUrl
-      }
+      },
+      image: deployImage
     })
-    const deployImage = getInputRequired(INPUT_DEPLOY_IMAGE)
     const forceDeploy = core.getBooleanInput('forceDeploy')
-
-    if (action === 'opened' || action === 'reopened' || forceDeploy) {
-      await deploy.deploy(deployImage)
-      return
-    }
-
-    if (action === 'closed') {
-      await deploy.destroy()
-      return
-    }
-
-    await deploy.rollout(deployImage)
+    await handleDeployForAction(action, deploy, forceDeploy)
   } catch (error) {
     if (error instanceof HttpError) {
       core.info(`HttpError ${error.statusCode}: ${JSON.stringify(error.body)}`)
