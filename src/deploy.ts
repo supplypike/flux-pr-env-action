@@ -43,13 +43,11 @@ export function fluxDeploy(d: FluxDeployConfig): Deploy {
       },
       patches: [
         {
-          patch: [
-            {
-              op: 'replace',
-              path: '/spec/values/image',
-              value: image
-            }
-          ],
+          patch: `
+            - op: replace
+              path: /spec/values/image'
+              value: ${image}
+          `,
           target: {
             group: helmrelease.group,
             version: helmrelease.version,

@@ -1,11 +1,7 @@
 import {CustomObjectDefinition} from './api'
 
 interface KustomizePatch {
-  patch: {
-    op: string
-    path: string
-    value: string
-  }[]
+  patch: string
   target: {
     kind?: string
     version?: string
