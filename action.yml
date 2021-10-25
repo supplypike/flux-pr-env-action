@@ -16,6 +16,7 @@ inputs:
     description: |
       name of github secret in cluster to reference for deploys
       should have access to pipelineRepo
+    default: github-secret
   deployImage:
     required: false
     description: |

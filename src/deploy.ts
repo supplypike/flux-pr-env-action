@@ -46,6 +46,9 @@ export function fluxDeploy(d: FluxDeployConfig): Deploy {
       },
       patches: [
         {
+          // TODO this patch is a placeholder
+          // - also patch ingress
+          // - spec.values.image can be an object
           patch: `
             - op: replace
               path: /spec/values/image'

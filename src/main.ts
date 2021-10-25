@@ -5,7 +5,6 @@ import {PullRequestEvent} from '@octokit/webhooks-types' // eslint-disable-line 
 import {fluxDeploy} from './deploy'
 
 import {slugurlref} from './slug'
-import {getInputRequired} from './utils'
 
 const INPUT_PIPELINE_PATH = 'pipelinePath'
 const INPUT_PIPELINE_REPO = 'pipelineRepo'
@@ -15,10 +14,11 @@ const INPUT_NAMESPACE = 'namespace'
 const INPUT_CMD = 'cmd'
 const CMD_DEPLOY = 'deploy'
 const CMD_DESTROY = 'destroy'
+const EVENT_PULL_REQUEST = 'pull_request'
 
 async function run(): Promise<void> {
   try {
-    if (github.context.eventName !== 'pull_request') {
+    if (github.context.eventName !== EVENT_PULL_REQUEST) {
       return
     }
 
@@ -28,12 +28,12 @@ async function run(): Promise<void> {
     const {clone_url} = repo
     const name = slugurlref(`${repo.name}-${branch}`)
 
-    const gitSecret = getInputRequired(INPUT_GIT_SECRET_NAME, 'github-token')
-    const pipelineRepo = getInputRequired(INPUT_PIPELINE_REPO, clone_url)
-    const pipelinePath = getInputRequired(INPUT_PIPELINE_PATH)
-    const namespace = getInputRequired(INPUT_NAMESPACE)
+    const gitSecret = core.getInput(INPUT_GIT_SECRET_NAME, {required: true})
+    const pipelineRepo = core.getInput(INPUT_PIPELINE_REPO) || clone_url
+    const pipelinePath = core.getInput(INPUT_PIPELINE_PATH, {required: true})
+    const namespace = core.getInput(INPUT_NAMESPACE, {required: true})
     const deployImage = core.getInput(INPUT_DEPLOY_IMAGE)
-    const cmd = getInputRequired(INPUT_CMD)
+    const cmd = core.getInput(INPUT_CMD, {required: true})
 
     const deploy = fluxDeploy({
       name,
