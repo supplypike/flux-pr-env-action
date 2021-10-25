@@ -1,4 +1,16 @@
-interface KustomizationSpec {
+import {CustomObjectDefinition} from './api'
+
+interface KustomizePatch {
+  patch: string
+  target: {
+    kind?: string
+    version?: string
+    group?: string
+    name?: string
+  }
+}
+
+export interface KustomizationSpec {
   interval?: string
   path: string
   prune?: boolean
@@ -6,21 +18,17 @@ interface KustomizationSpec {
     kind: string
     name: string
   }
+  patches?: KustomizePatch[]
 }
 
-export interface Kustomization {
-  metadata: {
-    name: string
-    namespace: string
-  }
-  spec: KustomizationSpec
-}
+const KUSTOMIZE_API_GROUP = 'kustomize.toolkit.fluxcd.io'
+const KUSTOMIZE_API_VERSION = 'v1beta1'
+const KUSTOMIZATION_PLURAL = 'kustomizations'
+const KUSTOMIZATION_KIND = 'Kustomization'
 
-export const kustomization = (
-  namespace: string
-): [string, string, string, string] => {
-  const group = 'kustomize.toolkit.fluxcd.io'
-  const version = 'v1beta1'
-  const kind = 'Kustomization'
-  return [group, version, namespace, kind]
+export const kustomization: CustomObjectDefinition = {
+  group: KUSTOMIZE_API_GROUP,
+  version: KUSTOMIZE_API_VERSION,
+  plural: KUSTOMIZATION_PLURAL,
+  kind: KUSTOMIZATION_KIND
 }

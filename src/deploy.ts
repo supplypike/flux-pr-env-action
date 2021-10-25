@@ -1,90 +1,11 @@
 import * as core from '@actions/core'
-import * as k8s from '@kubernetes/client-node'
+// eslint-disable-next-line import/no-unresolved
+import {PullRequestEvent} from '@octokit/webhooks-types'
 
-import {Kustomization, kustomization} from './kustomization'
-import {GitRepository, gitRepository} from './gitrepository'
-import {HelmRelease, helmrelease} from './helmrelease'
-
-const kc = new k8s.KubeConfig()
-kc.loadFromFile(process.env.KUBECONFIG || '~/.kube/config')
-
-const k8sApi = kc.makeApiClient(k8s.CoreV1Api)
-const customApi = kc.makeApiClient(k8s.CustomObjectsApi)
-
-const ns = (name: string): k8s.V1Namespace => {
-  return {
-    metadata: {
-      name
-    }
-  }
-}
-
-async function createNamespacedKustomization(
-  name: string,
-  namespace: string,
-  path: string
-): Promise<void> {
-  const payload: Kustomization = {
-    metadata: {
-      name,
-      namespace
-    },
-    spec: {
-      interval: '1m0s',
-      path,
-      prune: true,
-      sourceRef: {
-        kind: 'GitRepository',
-        name
-      }
-    }
-  }
-  await customApi.createNamespacedCustomObject(
-    ...kustomization(namespace),
-    payload
-  )
-}
-
-async function patchNamespacedHelmRelease(
-  name: string,
-  namespace: string,
-  patch: Partial<HelmRelease>
-): Promise<void> {
-  await customApi.patchNamespacedCustomObject(
-    ...helmrelease(namespace),
-    name,
-    patch
-  )
-}
-
-async function createNamespacedGitRepository(
-  name: string,
-  namespace: string,
-  branch: string,
-  url: string,
-  secretName: string
-): Promise<void> {
-  const payload: GitRepository = {
-    metadata: {
-      name,
-      namespace
-    },
-    spec: {
-      interval: '1m0s',
-      ref: {
-        branch
-      },
-      url,
-      secretRef: {
-        name: secretName
-      }
-    }
-  }
-  await customApi.createNamespacedCustomObject(
-    ...gitRepository(namespace),
-    payload
-  )
-}
+import {K8sApi} from './api'
+import {GitRepositorySpec} from './gitrepository'
+import {helmrelease} from './helmrelease'
+import {KustomizationSpec} from './kustomization'
 
 export interface FluxDeployConfig {
   name: string
@@ -97,46 +18,106 @@ export interface FluxDeployConfig {
     secretName: string
     url: string
   }
+  image: string
 }
 
 export interface Deploy {
   deploy(): Promise<void>
   destroy(): Promise<void>
-  rollout(image: string): Promise<void>
+  rollout(): Promise<void>
+}
+
+export async function handleDeployForAction(
+  action: PullRequestEvent['action'],
+  deploy: Deploy,
+  force = false
+): Promise<void> {
+  if (force || action === 'opened' || action === 'reopened') {
+    await deploy.deploy()
+    return
+  }
+
+  if (action === 'closed') {
+    await deploy.destroy()
+    return
+  }
+
+  if (action === 'synchronize') {
+    await deploy.rollout()
+    return
+  }
 }
 
 export function fluxDeploy(d: FluxDeployConfig): Deploy {
+  const api = K8sApi()
+
   async function deploy(): Promise<void> {
-    core.info(`deploy:\n ${JSON.stringify(d)}`)
-    await k8sApi.createNamespace(ns(d.namespace))
-    await createNamespacedKustomization(
-      d.name,
-      d.namespace,
-      d.kustomization.path
+    core.info(
+      `deploying preview ${d.namespace}/${d.name} with image ${d.image}`
     )
-    await createNamespacedGitRepository(
-      d.name,
-      d.namespace,
-      d.gitRepo.branch,
-      d.gitRepo.url,
-      d.gitRepo.secretName
-    )
+
+    core.info(`creating Namespace`)
+    await api.createNamespace(d.namespace)
+
+    core.info(`creating Kustomization`)
+    const kustomization: KustomizationSpec = {
+      interval: '1m0s',
+      path: d.kustomization.path,
+      prune: true,
+      sourceRef: {
+        kind: 'GitRepository',
+        name: d.name
+      },
+      patches: [
+        {
+          patch: `
+            - op: replace
+              path: /spec/values/image'
+              value: ${d.image}
+          `,
+          target: {
+            group: helmrelease.group,
+            version: helmrelease.version,
+            kind: helmrelease.kind,
+            name: d.name
+          }
+        }
+      ]
+    }
+    await api.createNamespacedKustomization(d.name, d.namespace, kustomization)
+
+    core.info(`creating GitRepository`)
+    const gitRepo: GitRepositorySpec = {
+      interval: '1m0s',
+      ref: {
+        branch: d.gitRepo.branch
+      },
+      url: d.gitRepo.url,
+      secretRef: {
+        name: d.gitRepo.secretName
+      }
+    }
+    await api.createNamespacedGitRepository(d.name, d.namespace, gitRepo)
   }
   async function destroy(): Promise<void> {
     core.info(`removing namespace ${d.namespace}`)
-    await k8sApi.deleteNamespace(d.namespace)
+    await api.deleteNamespace(d.namespace)
   }
 
-  async function rollout(image: string): Promise<void> {
-    await patchNamespacedHelmRelease(d.name, d.namespace, {
-      spec: {
-        values: {
-          deployment: {
-            image
-          }
+  async function rollout(): Promise<void> {
+    core.info(`rollout image ${d.image}`)
+
+    const patch = [
+      {
+        op: 'replace',
+        path: '/spec/values/deployment',
+        value: {
+          image: d.image
         }
       }
-    })
+    ]
+
+    await api.patchNamespacedHelmRelease(d.name, d.namespace, patch)
   }
 
   return {

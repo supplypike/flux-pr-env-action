@@ -30,7 +30,19 @@ jobs:
           kubectl get pods -n kube-system
           echo "current-context:" $(kubectl config current-context)
           echo "environment-kubeconfig:" ${KUBECONFIG}
+      - name: Install Flux binary
+        uses: supplypike/setup-bin@v1
+        with:
+          uri: 'https://github.com/fluxcd/flux2/releases/download/v0.16.2/flux_0.16.2_linux_amd64.tar.gz'
+          name: 'flux'
+          version: '0.16.2'
+      - name: Dev-install of flux to cluster
+        run: |
+          flux install
       - uses: ./
         with:
           repoSecret: "foo"
           kustomizePath: "bar"
+          deployImage: "nginx:latest"
+          namespace: "testing"
+          forceDeploy: true

@@ -1,4 +1,6 @@
-interface GitRepositorySpec {
+import {CustomObjectDefinition} from './api'
+
+export interface GitRepositorySpec {
   interval?: string
   ref: {
     branch: string
@@ -9,19 +11,14 @@ interface GitRepositorySpec {
   }
 }
 
-export interface GitRepository {
-  metadata: {
-    name: string
-    namespace: string
-  }
-  spec: GitRepositorySpec
-}
+const GIT_SOURCE_API_GROUP = 'source.toolkit.fluxcd.io'
+const GIT_SOURCE_API_VERSION = 'v1beta1'
+const GITREPO_PLURAL = 'gitrepositories'
+const GITREPO_KIND = 'GitRepository'
 
-export const gitRepository = (
-  namespace: string
-): [string, string, string, string] => {
-  const group = 'source.toolkit.fluxcd.io'
-  const version = 'v1beta1'
-  const kind = 'GitRepository'
-  return [group, version, namespace, kind]
+export const gitRepository: CustomObjectDefinition = {
+  group: GIT_SOURCE_API_GROUP,
+  version: GIT_SOURCE_API_VERSION,
+  kind: GITREPO_KIND,
+  plural: GITREPO_PLURAL
 }
