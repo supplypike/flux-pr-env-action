@@ -2,21 +2,34 @@ name: 'Your name here'
 description: 'Provide a description here'
 author: 'Your name or organization here'
 inputs:
-  kustomizePath: 
+  pipelineRepo:
+    required: false
+    description: |
+      repo with Flux manifests
+      defaults to current repo
+  pipelinePath:
     required: true
-    description: path to kustomization in git repo
-  repoSecret:
+    description: path to Flux manifests
+    default: './.kustomize/preview'
+  secretName:
     required: true
-    description: name of github secret in cluster
+    description: |
+      name of github secret in cluster to reference for deploys
+      should have access to pipelineRepo
   deployImage:
-    required: true
-    description: deploy image
+    required: false
+    description: |
+      image and tag to deploy
+      example: nginx:latest
   namespace:
     required: true
-    description: deploy namespace
-  forceDeploy:
-    required: false
-    description: if should deploy even during a sync action
+    description: kubernetes namespace to target
+  cmd:
+    required: true
+    description: |
+      command to run - possible values:
+        deploy
+        destroy
 runs:
   using: 'node12'
   main: 'dist/index.js'

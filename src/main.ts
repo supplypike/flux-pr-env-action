@@ -2,44 +2,60 @@ import * as core from '@actions/core'
 import * as github from '@actions/github'
 import {HttpError} from '@kubernetes/client-node'
 import {PullRequestEvent} from '@octokit/webhooks-types' // eslint-disable-line import/no-unresolved
-import {fluxDeploy, handleDeployForAction} from './deploy'
+import {fluxDeploy} from './deploy'
 
-import {slugPrContext, slugurlref} from './slug'
+import {slugurlref} from './slug'
 import {getInputRequired} from './utils'
 
-const INPUT_KUSTOMIZE_PATH = 'kustomizePath'
-const INPUT_REPO_SECRET = 'repoSecret'
+const INPUT_PIPELINE_PATH = 'pipelinePath'
+const INPUT_PIPELINE_REPO = 'pipelineRepo'
+const INPUT_GIT_SECRET_NAME = 'secretName'
 const INPUT_DEPLOY_IMAGE = 'deployImage'
 const INPUT_NAMESPACE = 'namespace'
+const INPUT_CMD = 'cmd'
+const CMD_DEPLOY = 'deploy'
+const CMD_DESTROY = 'destroy'
 
 async function run(): Promise<void> {
   try {
     if (github.context.eventName !== 'pull_request') {
       return
     }
+
     const payload = github.context.payload as PullRequestEvent
-    const kPath = getInputRequired(INPUT_KUSTOMIZE_PATH)
-    const gitSecret = getInputRequired(INPUT_REPO_SECRET)
+    const {repo, ref} = payload.pull_request.head
+    const branch = slugurlref(ref)
+    const {clone_url} = repo
+    const name = slugurlref(`${repo.name}-${branch}`)
+
+    const gitSecret = getInputRequired(INPUT_GIT_SECRET_NAME, 'github-token')
+    const pipelineRepo = getInputRequired(INPUT_PIPELINE_REPO, clone_url)
+    const pipelinePath = getInputRequired(INPUT_PIPELINE_PATH)
     const namespace = getInputRequired(INPUT_NAMESPACE)
-    const deployImage = getInputRequired(INPUT_DEPLOY_IMAGE)
-    const {branch, cloneUrl, action, repoName} = slugPrContext(payload)
-    const name = slugurlref(`${repoName}-${branch}`)
+    const deployImage = core.getInput(INPUT_DEPLOY_IMAGE)
+    const cmd = getInputRequired(INPUT_CMD)
 
     const deploy = fluxDeploy({
       name,
       namespace,
       kustomization: {
-        path: kPath
+        path: pipelinePath
       },
       gitRepo: {
         branch,
         secretName: gitSecret,
-        url: cloneUrl
+        url: pipelineRepo
       },
       image: deployImage
     })
-    const forceDeploy = core.getBooleanInput('forceDeploy')
-    await handleDeployForAction(action, deploy, forceDeploy)
+
+    if (cmd === CMD_DESTROY) {
+      await deploy.destroy()
+    } else if (cmd === CMD_DEPLOY) {
+      await deploy.deployOrRollout()
+    } else {
+      throw new Error(`Input "cmd" must be "destroy" or "deploy"`)
+    }
   } catch (error) {
     if (error instanceof HttpError) {
       core.info(`HttpError ${error.statusCode}: ${JSON.stringify(error.body)}`)

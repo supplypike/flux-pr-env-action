@@ -1,6 +1,4 @@
 import * as core from '@actions/core'
-// eslint-disable-next-line import/no-unresolved
-import {PullRequestEvent} from '@octokit/webhooks-types'
 
 import {K8sApi} from './api'
 import {GitRepositorySpec} from './gitrepository'
@@ -18,34 +16,15 @@ export interface FluxDeployConfig {
     secretName: string
     url: string
   }
-  image: string
+  image?: string
 }
 
 export interface Deploy {
   deploy(): Promise<void>
   destroy(): Promise<void>
   rollout(): Promise<void>
-}
-
-export async function handleDeployForAction(
-  action: PullRequestEvent['action'],
-  deploy: Deploy,
-  force = false
-): Promise<void> {
-  if (force || action === 'opened' || action === 'reopened') {
-    await deploy.deploy()
-    return
-  }
-
-  if (action === 'closed') {
-    await deploy.destroy()
-    return
-  }
-
-  if (action === 'synchronize') {
-    await deploy.rollout()
-    return
-  }
+  // perform a rollout if the deploy already exists
+  deployOrRollout(): Promise<void>
 }
 
 export function fluxDeploy(d: FluxDeployConfig): Deploy {
@@ -55,9 +34,6 @@ export function fluxDeploy(d: FluxDeployConfig): Deploy {
     core.info(
       `deploying preview ${d.namespace}/${d.name} with image ${d.image}`
     )
-
-    core.info(`creating Namespace`)
-    await api.createNamespace(d.namespace)
 
     core.info(`creating Kustomization`)
     const kustomization: KustomizationSpec = {
@@ -100,13 +76,19 @@ export function fluxDeploy(d: FluxDeployConfig): Deploy {
     await api.createNamespacedGitRepository(d.name, d.namespace, gitRepo)
   }
   async function destroy(): Promise<void> {
-    core.info(`removing namespace ${d.namespace}`)
-    await api.deleteNamespace(d.namespace)
+    core.info(`removing kustomization ${d.name}`)
+    await api.deleteNamespacedKustomization(d.name, d.namespace)
+    core.info(`removing gitrepository ${d.name}`)
+    await api.deleteNamespacedGitRepository(d.name, d.namespace)
   }
 
   async function rollout(): Promise<void> {
-    core.info(`rollout image ${d.image}`)
+    if (!d.image) {
+      core.warning(`Not rolling out: missing "deployImage" in action input`)
+      return
+    }
 
+    core.info(`rollout image ${d.image}`)
     const patch = [
       {
         op: 'replace',
@@ -120,9 +102,21 @@ export function fluxDeploy(d: FluxDeployConfig): Deploy {
     await api.patchNamespacedHelmRelease(d.name, d.namespace, patch)
   }
 
+  async function deployOrRollout(): Promise<void> {
+    const k = await api.getNamespacedKustomization(d.name, d.namespace)
+    // eslint-disable-next-line no-console
+    console.log('kustomization: ', JSON.stringify(k))
+    if (k) {
+      await rollout()
+    } else {
+      await deploy()
+    }
+  }
+
   return {
     deploy,
     destroy,
-    rollout
+    rollout,
+    deployOrRollout
   }
 }

@@ -1,5 +1,3 @@
-import {PullRequestEvent} from '@octokit/webhooks-types' // eslint-disable-line import/no-unresolved
-
 /**
  * source:
  * https://raw.githubusercontent.com/rlespinasse/github-slug-action/2f05f8b5cbdfb8b37e68426a162be978e4e82550/src/slug.ts
@@ -97,25 +95,4 @@ function replaceAnyNonUrlCharactersWithHyphen(envVar: string): string {
 
 export function removeRef(envVar: string): string {
   return envVar.replace(RegExp('^refs/(heads|tags|pull)/'), '')
-}
-
-interface PullRequestContext {
-  repoName: string
-  branch: string
-  cloneUrl: string
-  action: PullRequestEvent['action']
-}
-
-export function slugPrContext(payload: PullRequestEvent): PullRequestContext {
-  const action = payload.action
-  const repoName = payload.pull_request.head.repo.name
-  const branch = slugurlref(payload.pull_request.head.ref)
-  const cloneUrl = payload.pull_request.head.repo.clone_url
-
-  return {
-    repoName,
-    branch,
-    cloneUrl,
-    action
-  }
 }

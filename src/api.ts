@@ -5,24 +5,29 @@ import {gitRepository, GitRepositorySpec} from './gitrepository'
 import {helmrelease} from './helmrelease'
 
 export interface Api {
+  getNamespacedKustomization(
+    name: string,
+    namespace: string
+  ): Promise<CustomObject<KustomizationSpec>>
   createNamespacedKustomization(
     name: string,
     namespace: string,
     spec: KustomizationSpec
   ): Promise<void>
+  deleteNamespacedKustomization(name: string, namespace: string): Promise<void>
 
   createNamespacedGitRepository(
     name: string,
     namespace: string,
     spec: GitRepositorySpec
   ): Promise<void>
+  deleteNamespacedGitRepository(name: string, namespace: string): Promise<void>
+
   patchNamespacedHelmRelease(
     name: string,
     namespace: string,
     patch: K8sPatch[]
   ): Promise<void>
-  createNamespace(namespace: string): Promise<void>
-  deleteNamespace(namespace: string): Promise<void>
 }
 
 interface K8sPatch {
@@ -102,8 +107,19 @@ export function K8sApi(): Api {
   const kc = new k8s.KubeConfig()
   kc.loadFromDefault()
 
-  const k8sApi = kc.makeApiClient(k8s.CoreV1Api)
   const customApi = kc.makeApiClient(k8s.CustomObjectsApi)
+
+  async function getNamespacedKustomization(
+    name: string,
+    namespace: string
+  ): Promise<CustomObject<KustomizationSpec>> {
+    const res = await customApi.getNamespacedCustomObject(
+      ...namespacedCustomObjectArgs(namespace, kustomization),
+      name
+    )
+
+    return res.body as CustomObject<KustomizationSpec>
+  }
 
   async function createNamespacedKustomization(
     name: string,
@@ -113,6 +129,16 @@ export function K8sApi(): Api {
     await customApi.createNamespacedCustomObject(
       ...namespacedCustomObjectArgs(namespace, kustomization),
       payload(name, namespace, kustomization, spec)
+    )
+  }
+
+  async function deleteNamespacedKustomization(
+    name: string,
+    namespace: string
+  ): Promise<void> {
+    await customApi.deleteNamespacedCustomObject(
+      ...namespacedCustomObjectArgs(namespace, kustomization),
+      name
     )
   }
 
@@ -146,23 +172,24 @@ export function K8sApi(): Api {
     )
   }
 
-  async function createNamespace(namespace: string): Promise<void> {
-    await k8sApi.createNamespace({
-      metadata: {
-        name: namespace
-      }
-    })
-  }
-
-  async function deleteNamespace(namespace: string): Promise<void> {
-    await k8sApi.deleteNamespace(namespace)
+  async function deleteNamespacedGitRepository(
+    name: string,
+    namespace: string
+  ): Promise<void> {
+    await customApi.deleteNamespacedCustomObject(
+      ...namespacedCustomObjectArgs(namespace, gitRepository),
+      name
+    )
   }
 
   return {
+    getNamespacedKustomization,
     createNamespacedKustomization,
+    deleteNamespacedKustomization,
+
     createNamespacedGitRepository,
-    createNamespace,
-    deleteNamespace,
+    deleteNamespacedGitRepository,
+
     patchNamespacedHelmRelease
   }
 }
