@@ -107,11 +107,17 @@ export function fluxDeploy(d: FluxDeployConfig): Deploy {
 
   async function deployOrRollout(): Promise<void> {
     core.info(`checking for existing deploy ${d.namespace}/${d.name}`)
-    const k = await api.getNamespacedKustomization(d.name, d.namespace)
 
-    core.info(`kustomization: ${JSON.stringify(k)}`)
+    let found = false
+    try {
+      if (await api.getNamespacedKustomization(d.name, d.namespace)) {
+        found = true
+      }
+    } catch (ex) {
+      // swallow error
+    }
 
-    if (k) {
+    if (found) {
       core.info('found deploy')
       await rollout()
     } else {
