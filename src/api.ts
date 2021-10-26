@@ -118,6 +118,9 @@ export function K8sApi(): Api {
       name
     )
 
+    // eslint-disable-next-line no-console
+    console.log(res.response)
+
     return res.body as CustomObject<KustomizationSpec>
   }
 

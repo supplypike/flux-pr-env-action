@@ -58,12 +58,12 @@ async function run(): Promise<void> {
     }
   } catch (error) {
     if (error instanceof HttpError) {
-      core.info(
-        `${error.response.method} ${error.response.url} ${error.statusCode}`
-      )
-      core.info(`HttpError: ${JSON.stringify(error.body)}`)
+      core.info(`HttpError ${error.statusCode}: ${JSON.stringify(error.body)}`)
     }
-    if (error instanceof Error) core.setFailed(error.message)
+    if (error instanceof Error) {
+      core.info(error.stack ?? '')
+      core.setFailed(error.message)
+    }
   }
 }
 

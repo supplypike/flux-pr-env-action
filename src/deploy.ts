@@ -112,8 +112,10 @@ export function fluxDeploy(d: FluxDeployConfig): Deploy {
     core.info(`kustomization: ${JSON.stringify(k)}`)
 
     if (k) {
+      core.info('found deploy')
       await rollout()
     } else {
+      core.info('creating deploy')
       await deploy()
     }
   }
