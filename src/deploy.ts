@@ -106,9 +106,11 @@ export function fluxDeploy(d: FluxDeployConfig): Deploy {
   }
 
   async function deployOrRollout(): Promise<void> {
+    core.info(`checking for existing deploy ${d.namespace}/${d.name}`)
     const k = await api.getNamespacedKustomization(d.name, d.namespace)
-    // eslint-disable-next-line no-console
-    console.log('kustomization: ', JSON.stringify(k))
+
+    core.info(`kustomization: ${JSON.stringify(k)}`)
+
     if (k) {
       await rollout()
     } else {
