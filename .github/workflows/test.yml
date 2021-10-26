@@ -39,11 +39,13 @@ jobs:
       - name: Dev-install of flux to cluster
         run: |
           flux install
+      - run: |
+          kubectl create namespace previews
       - uses: ./
         with:
           deployImage: "nginx:latest"
-          namespace: "testing"
+          namespace: preview
           cmd: deploy
       - name: debugging
         run: |
-          kubectl -n testing get kustomization
+          kubectl -n previews get kustomization
