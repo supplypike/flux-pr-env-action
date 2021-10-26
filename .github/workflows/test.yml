@@ -49,3 +49,4 @@ jobs:
       - name: debugging
         run: |
           kubectl -n previews get kustomization
+          kubectl -n previews get gitrepository

@@ -3,6 +3,7 @@ import * as k8s from '@kubernetes/client-node'
 import {kustomization, KustomizationSpec} from './kustomization'
 import {gitRepository, GitRepositorySpec} from './gitrepository'
 import {helmrelease} from './helmrelease'
+import {ActionOnInvalid} from '@kubernetes/client-node/dist/config_types'
 
 export interface Api {
   getNamespacedKustomization(
@@ -105,7 +106,12 @@ function payload<Spec>(
 
 export function K8sApi(): Api {
   const kc = new k8s.KubeConfig()
-  kc.loadFromDefault()
+  kc.loadFromDefault({
+    onInvalidEntry: ActionOnInvalid.THROW
+  })
+
+  // eslint-disable-next-line no-console
+  console.log(kc.exportConfig())
 
   const customApi = kc.makeApiClient(k8s.CustomObjectsApi)
 
