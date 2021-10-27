@@ -10,7 +10,7 @@ inputs:
   pipelinePath:
     required: true
     description: path to Flux manifests
-    default: './.kustomize/preview'
+    default: './.kustomization/preview'
   secretName:
     required: true
     description: |
