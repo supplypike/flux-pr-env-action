@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import * as k8s from '@kubernetes/client-node'
 
 import {kustomization, KustomizationSpec} from './kustomization'
@@ -111,8 +110,6 @@ export function K8sApi(): Api {
     onInvalidEntry: ActionOnInvalid.THROW
   })
 
-  console.log(kc.exportConfig())
-
   const customApi = kc.makeApiClient(k8s.CustomObjectsApi)
 
   async function getNamespacedKustomization(
@@ -124,8 +121,6 @@ export function K8sApi(): Api {
       name
     )
 
-    console.log(res.response)
-
     return res.body as CustomObject<KustomizationSpec>
   }
 
@@ -134,11 +129,10 @@ export function K8sApi(): Api {
     namespace: string,
     spec: KustomizationSpec
   ): Promise<void> {
-    const res = await customApi.createNamespacedCustomObject(
+    await customApi.createNamespacedCustomObject(
       ...namespacedCustomObjectArgs(namespace, kustomization),
       payload(name, namespace, kustomization, spec)
     )
-    console.log(res.response)
   }
 
   async function deleteNamespacedKustomization(
