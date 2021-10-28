@@ -44,8 +44,9 @@ export function fluxDeploy(d: FluxDeployConfig): Deploy {
         name: d.name
       },
       targetNamespace: d.namespace,
+      // this is coming up empty?!
       postBuild: {
-        subsitute: {
+        substitute: {
           preview_name: d.name,
           image_tag: d.imageTag
         }

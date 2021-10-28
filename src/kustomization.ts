@@ -10,7 +10,7 @@ export interface KustomizationSpec {
   }
   targetNamespace: string
   postBuild?: {
-    subsitute: {
+    substitute: {
       [key: string]: string
     }
   }
