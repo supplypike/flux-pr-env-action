@@ -32,7 +32,7 @@ async function run(): Promise<void> {
     const pipelineRepo = core.getInput(INPUT_PIPELINE_REPO) || clone_url
     const pipelinePath = core.getInput(INPUT_PIPELINE_PATH, {required: true})
     const namespace = core.getInput(INPUT_NAMESPACE, {required: true})
-    const deployImage = core.getInput(INPUT_DEPLOY_IMAGE)
+    const deployImage = core.getInput(INPUT_DEPLOY_IMAGE, {required: true})
     const cmd = core.getInput(INPUT_CMD, {required: true})
 
     const deploy = fluxDeploy({
@@ -46,7 +46,7 @@ async function run(): Promise<void> {
         secretName: gitSecret,
         url: pipelineRepo
       },
-      image: deployImage
+      imageTag: deployImage
     })
 
     if (cmd === CMD_DESTROY) {

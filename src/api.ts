@@ -2,7 +2,6 @@ import * as k8s from '@kubernetes/client-node'
 
 import {kustomization, KustomizationSpec} from './kustomization'
 import {gitRepository, GitRepositorySpec} from './gitrepository'
-import {helmrelease} from './helmrelease'
 import {ActionOnInvalid} from '@kubernetes/client-node/dist/config_types'
 
 export interface Api {
@@ -15,6 +14,11 @@ export interface Api {
     namespace: string,
     spec: KustomizationSpec
   ): Promise<void>
+  patchNamespacedKustomization(
+    name: string,
+    namespace: string,
+    patch: K8sPatch[]
+  ): Promise<void>
   deleteNamespacedKustomization(name: string, namespace: string): Promise<void>
 
   createNamespacedGitRepository(
@@ -23,20 +27,12 @@ export interface Api {
     spec: GitRepositorySpec
   ): Promise<void>
   deleteNamespacedGitRepository(name: string, namespace: string): Promise<void>
-
-  patchNamespacedHelmRelease(
-    name: string,
-    namespace: string,
-    patch: K8sPatch[]
-  ): Promise<void>
 }
 
 interface K8sPatch {
   op: string
   path: string
-  value: {
-    [name: string]: string
-  }
+  value: string | object
 }
 
 interface K8sCondition {
@@ -135,17 +131,7 @@ export function K8sApi(): Api {
     )
   }
 
-  async function deleteNamespacedKustomization(
-    name: string,
-    namespace: string
-  ): Promise<void> {
-    await customApi.deleteNamespacedCustomObject(
-      ...namespacedCustomObjectArgs(namespace, kustomization),
-      name
-    )
-  }
-
-  async function patchNamespacedHelmRelease(
+  async function patchNamespacedKustomization(
     name: string,
     namespace: string,
     patch: K8sPatch[]
@@ -154,13 +140,23 @@ export function K8sApi(): Api {
       headers: {'Content-type': k8s.PatchUtils.PATCH_FORMAT_JSON_PATCH}
     }
     await customApi.patchNamespacedCustomObject(
-      ...namespacedCustomObjectArgs(namespace, helmrelease),
+      ...namespacedCustomObjectArgs(namespace, kustomization),
       name,
       patch,
       undefined,
       undefined,
       undefined,
       options
+    )
+  }
+
+  async function deleteNamespacedKustomization(
+    name: string,
+    namespace: string
+  ): Promise<void> {
+    await customApi.deleteNamespacedCustomObject(
+      ...namespacedCustomObjectArgs(namespace, kustomization),
+      name
     )
   }
 
@@ -188,11 +184,10 @@ export function K8sApi(): Api {
   return {
     getNamespacedKustomization,
     createNamespacedKustomization,
+    patchNamespacedKustomization,
     deleteNamespacedKustomization,
 
     createNamespacedGitRepository,
-    deleteNamespacedGitRepository,
-
-    patchNamespacedHelmRelease
+    deleteNamespacedGitRepository
   }
 }

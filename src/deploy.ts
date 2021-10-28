@@ -2,7 +2,6 @@ import * as core from '@actions/core'
 
 import {K8sApi} from './api'
 import {GitRepositorySpec} from './gitrepository'
-import {helmrelease} from './helmrelease'
 import {KustomizationSpec} from './kustomization'
 
 export interface FluxDeployConfig {
@@ -16,7 +15,7 @@ export interface FluxDeployConfig {
     secretName: string
     url: string
   }
-  image?: string
+  imageTag: string
 }
 
 export interface Deploy {
@@ -32,7 +31,7 @@ export function fluxDeploy(d: FluxDeployConfig): Deploy {
 
   async function deploy(): Promise<void> {
     core.info(
-      `deploying preview ${d.namespace}/${d.name} with image ${d.image}`
+      `deploying preview ${d.namespace}/${d.name} with tag ${d.imageTag}`
     )
 
     core.info(`creating Kustomization`)
@@ -44,24 +43,13 @@ export function fluxDeploy(d: FluxDeployConfig): Deploy {
         kind: 'GitRepository',
         name: d.name
       },
-      patches: [
-        {
-          // TODO this patch is a placeholder
-          // - also patch ingress
-          // - spec.values.image can be an object
-          patch: `
-            - op: replace
-              path: /spec/values/image'
-              value: ${d.image}
-          `,
-          target: {
-            group: helmrelease.group,
-            version: helmrelease.version,
-            kind: helmrelease.kind,
-            name: d.name
-          }
+      targetNamespace: d.namespace,
+      postBuild: {
+        subsitute: {
+          preview_name: d.name,
+          image_tag: d.imageTag
         }
-      ]
+      }
     }
     await api.createNamespacedKustomization(d.name, d.namespace, kustomization)
 
@@ -86,23 +74,21 @@ export function fluxDeploy(d: FluxDeployConfig): Deploy {
   }
 
   async function rollout(): Promise<void> {
-    if (!d.image) {
+    if (!d.imageTag) {
       core.warning(`Not rolling out: missing "deployImage" in action input`)
       return
     }
 
-    core.info(`rollout image ${d.image}`)
+    core.info(`rollout image ${d.imageTag}`)
     const patch = [
       {
         op: 'replace',
-        path: '/spec/values/deployment',
-        value: {
-          image: d.image
-        }
+        path: '/spec/postBuild/subsitute/image_tag',
+        value: d.imageTag
       }
     ]
 
-    await api.patchNamespacedHelmRelease(d.name, d.namespace, patch)
+    await api.patchNamespacedKustomization(d.name, d.namespace, patch)
   }
 
   async function deployOrRollout(): Promise<void> {

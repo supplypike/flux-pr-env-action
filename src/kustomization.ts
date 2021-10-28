@@ -1,15 +1,5 @@
 import {CustomObjectDefinition} from './api'
 
-interface KustomizePatch {
-  patch: string
-  target: {
-    kind?: string
-    version?: string
-    group?: string
-    name?: string
-  }
-}
-
 export interface KustomizationSpec {
   interval?: string
   path: string
@@ -18,7 +8,12 @@ export interface KustomizationSpec {
     kind: string
     name: string
   }
-  patches?: KustomizePatch[]
+  targetNamespace: string
+  postBuild?: {
+    subsitute: {
+      [key: string]: string
+    }
+  }
 }
 
 const KUSTOMIZE_API_GROUP = 'kustomize.toolkit.fluxcd.io'

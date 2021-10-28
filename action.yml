@@ -17,11 +17,10 @@ inputs:
       name of github secret in cluster to reference for deploys
       should have access to pipelineRepo
     default: github-token
-  deployImage:
-    required: false
-    description: |
-      image and tag to deploy
-      example: nginx:latest
+  deployTag:
+    required: true
+    description: image tag to deploy
+    default: latest
   namespace:
     required: true
     description: kubernetes namespace to target
