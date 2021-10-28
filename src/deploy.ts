@@ -44,7 +44,6 @@ export function fluxDeploy(d: FluxDeployConfig): Deploy {
         name: d.name
       },
       targetNamespace: d.namespace,
-      // this is coming up empty?!
       postBuild: {
         substitute: {
           preview_name: d.name,
@@ -79,7 +78,7 @@ export function fluxDeploy(d: FluxDeployConfig): Deploy {
     const patch = [
       {
         op: 'replace',
-        path: '/spec/postBuild/subsitute/image_tag',
+        path: '/spec/postBuild/substitute/image_tag',
         value: d.imageTag
       }
     ]
