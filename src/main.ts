@@ -9,7 +9,7 @@ import {slugurlref} from './slug'
 const INPUT_PIPELINE_PATH = 'pipelinePath'
 const INPUT_PIPELINE_REPO = 'pipelineRepo'
 const INPUT_GIT_SECRET_NAME = 'secretName'
-const INPUT_DEPLOY_IMAGE = 'deployImage'
+const INPUT_DEPLOY_IMAGE = 'deployTag'
 const INPUT_NAMESPACE = 'namespace'
 const INPUT_CMD = 'cmd'
 const CMD_DEPLOY = 'deploy'
@@ -32,7 +32,7 @@ async function run(): Promise<void> {
     const pipelineRepo = core.getInput(INPUT_PIPELINE_REPO) || clone_url
     const pipelinePath = core.getInput(INPUT_PIPELINE_PATH, {required: true})
     const namespace = core.getInput(INPUT_NAMESPACE, {required: true})
-    const deployImage = core.getInput(INPUT_DEPLOY_IMAGE, {required: true})
+    const deployTag = core.getInput(INPUT_DEPLOY_IMAGE, {required: true})
     const cmd = core.getInput(INPUT_CMD, {required: true})
 
     const deploy = fluxDeploy({
@@ -46,7 +46,7 @@ async function run(): Promise<void> {
         secretName: gitSecret,
         url: pipelineRepo
       },
-      imageTag: deployImage
+      imageTag: deployTag
     })
 
     if (cmd === CMD_DESTROY) {

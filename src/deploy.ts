@@ -74,11 +74,6 @@ export function fluxDeploy(d: FluxDeployConfig): Deploy {
   }
 
   async function rollout(): Promise<void> {
-    if (!d.imageTag) {
-      core.warning(`Not rolling out: missing "deployImage" in action input`)
-      return
-    }
-
     core.info(`rollout image ${d.imageTag}`)
     const patch = [
       {
