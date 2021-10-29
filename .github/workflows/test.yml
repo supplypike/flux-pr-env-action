@@ -39,10 +39,9 @@ jobs:
       - name: Dev-install of flux to cluster
         run: |
           flux install
+      - run: |
+          kubectl create namespace previews
       - uses: ./
         with:
-          repoSecret: "foo"
-          kustomizePath: "bar"
-          deployImage: "nginx:latest"
-          namespace: "testing"
-          forceDeploy: true
+          namespace: previews
+          cmd: deploy

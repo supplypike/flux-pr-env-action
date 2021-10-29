@@ -1,10 +1,7 @@
 import * as core from '@actions/core'
-// eslint-disable-next-line import/no-unresolved
-import {PullRequestEvent} from '@octokit/webhooks-types'
 
 import {K8sApi} from './api'
 import {GitRepositorySpec} from './gitrepository'
-import {helmrelease} from './helmrelease'
 import {KustomizationSpec} from './kustomization'
 
 export interface FluxDeployConfig {
@@ -18,34 +15,15 @@ export interface FluxDeployConfig {
     secretName: string
     url: string
   }
-  image: string
+  imageTag: string
 }
 
 export interface Deploy {
   deploy(): Promise<void>
   destroy(): Promise<void>
   rollout(): Promise<void>
-}
-
-export async function handleDeployForAction(
-  action: PullRequestEvent['action'],
-  deploy: Deploy,
-  force = false
-): Promise<void> {
-  if (force || action === 'opened' || action === 'reopened') {
-    await deploy.deploy()
-    return
-  }
-
-  if (action === 'closed') {
-    await deploy.destroy()
-    return
-  }
-
-  if (action === 'synchronize') {
-    await deploy.rollout()
-    return
-  }
+  // perform a rollout if the deploy already exists
+  deployOrRollout(): Promise<void>
 }
 
 export function fluxDeploy(d: FluxDeployConfig): Deploy {
@@ -53,11 +31,8 @@ export function fluxDeploy(d: FluxDeployConfig): Deploy {
 
   async function deploy(): Promise<void> {
     core.info(
-      `deploying preview ${d.namespace}/${d.name} with image ${d.image}`
+      `deploying preview ${d.namespace}/${d.name} with tag ${d.imageTag}`
     )
-
-    core.info(`creating Namespace`)
-    await api.createNamespace(d.namespace)
 
     core.info(`creating Kustomization`)
     const kustomization: KustomizationSpec = {
@@ -68,21 +43,13 @@ export function fluxDeploy(d: FluxDeployConfig): Deploy {
         kind: 'GitRepository',
         name: d.name
       },
-      patches: [
-        {
-          patch: `
-            - op: replace
-              path: /spec/values/image'
-              value: ${d.image}
-          `,
-          target: {
-            group: helmrelease.group,
-            version: helmrelease.version,
-            kind: helmrelease.kind,
-            name: d.name
-          }
+      targetNamespace: d.namespace,
+      postBuild: {
+        substitute: {
+          preview_name: d.name,
+          image_tag: d.imageTag
         }
-      ]
+      }
     }
     await api.createNamespacedKustomization(d.name, d.namespace, kustomization)
 
@@ -100,29 +67,50 @@ export function fluxDeploy(d: FluxDeployConfig): Deploy {
     await api.createNamespacedGitRepository(d.name, d.namespace, gitRepo)
   }
   async function destroy(): Promise<void> {
-    core.info(`removing namespace ${d.namespace}`)
-    await api.deleteNamespace(d.namespace)
+    core.info(`removing kustomization ${d.name}`)
+    await api.deleteNamespacedKustomization(d.name, d.namespace)
+    core.info(`removing gitrepository ${d.name}`)
+    await api.deleteNamespacedGitRepository(d.name, d.namespace)
   }
 
   async function rollout(): Promise<void> {
-    core.info(`rollout image ${d.image}`)
-
+    core.info(`rollout image ${d.imageTag}`)
     const patch = [
       {
         op: 'replace',
-        path: '/spec/values/deployment',
-        value: {
-          image: d.image
-        }
+        path: '/spec/postBuild/substitute/image_tag',
+        value: d.imageTag
       }
     ]
 
-    await api.patchNamespacedHelmRelease(d.name, d.namespace, patch)
+    await api.patchNamespacedKustomization(d.name, d.namespace, patch)
+  }
+
+  async function deployOrRollout(): Promise<void> {
+    core.info(`checking for existing deploy ${d.namespace}/${d.name}`)
+
+    let found = false
+    try {
+      if (await api.getNamespacedKustomization(d.name, d.namespace)) {
+        found = true
+      }
+    } catch (ex) {
+      // swallow error
+    }
+
+    if (found) {
+      core.info('found deploy')
+      await rollout()
+    } else {
+      core.info('creating deploy')
+      await deploy()
+    }
   }
 
   return {
     deploy,
     destroy,
-    rollout
+    rollout,
+    deployOrRollout
   }
 }
