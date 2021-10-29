@@ -1,11 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import {describe, expect, it, jest, beforeEach} from '@jest/globals'
-import {Api, CustomObject} from '../src/api'
 import {fluxDeploy, FluxDeployConfig} from '../src/deploy'
 import {GitRepositorySpec} from '../src/gitrepository'
 import {KustomizationSpec} from '../src/kustomization'
 
-//jest.mock('@actions/core')
+jest.mock('@actions/core')
 
 const mockDeploy: FluxDeployConfig = {
   name: 'mock',
