@@ -26,9 +26,7 @@ export interface Deploy {
   deployOrRollout(): Promise<void>
 }
 
-export function fluxDeploy(d: FluxDeployConfig): Deploy {
-  const api = K8sApi()
-
+export function fluxDeploy(d: FluxDeployConfig, api = K8sApi()): Deploy {
   async function deploy(): Promise<void> {
     core.info(
       `deploying preview ${d.namespace}/${d.name} with tag ${d.imageTag}`
