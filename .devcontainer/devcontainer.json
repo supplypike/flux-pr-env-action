@@ -20,7 +20,8 @@
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
 		"dbaeumer.vscode-eslint",
-		"rvest.vs-code-prettier-eslint"
+		"rvest.vs-code-prettier-eslint",
+		"orta.vscode-jest"
 	],
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
@@ -33,6 +34,7 @@
 	"remoteUser": "node",
 	"features": {
 		"kubectl-helm-minikube": "latest",
-		"docker-in-docker": "latest"
+		"docker-in-docker": "latest",
+		"github-cli": "latest"
 	}
 }

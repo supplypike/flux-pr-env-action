@@ -1,11 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {describe, expect, it, jest, beforeEach} from '@jest/globals'
-import {Api} from '../src/api'
+import {Api, CustomObject} from '../src/api'
 import {fluxDeploy, FluxDeployConfig} from '../src/deploy'
 import {GitRepositorySpec} from '../src/gitrepository'
 import {KustomizationSpec} from '../src/kustomization'
-import {MockApi} from './mocks/api'
 
-jest.mock('@actions/core')
+//jest.mock('@actions/core')
 
 const mockDeploy: FluxDeployConfig = {
   name: 'mock',
@@ -48,9 +48,13 @@ const mockGitRepo: GitRepositorySpec = {
 }
 
 describe('#deploy', () => {
-  let api: Api
+  let api: any
+
   beforeEach(async () => {
-    api = MockApi()
+    api = {
+      createNamespacedKustomization: jest.fn(),
+      createNamespacedGitRepository: jest.fn()
+    }
     const d = fluxDeploy(mockDeploy, api)
     await d.deploy()
   })
@@ -73,24 +77,101 @@ describe('#deploy', () => {
 })
 
 describe('#destroy', () => {
-  let api: Api
+  let api: any
+
   beforeEach(async () => {
-    api = MockApi()
+    api = {
+      deleteNamespacedKustomization: jest.fn(),
+      deleteNamespacedGitRepository: jest.fn()
+    }
     const d = fluxDeploy(mockDeploy, api)
     await d.destroy()
   })
 
-  it('should delete a Kustomization', () => {
-    expect(api.createNamespacedKustomization).toHaveBeenCalledWith(
+  it('should delete a GitRepository', () => {
+    expect(api.deleteNamespacedGitRepository).toHaveBeenCalledWith(
       'mock',
       'mock-ns'
     )
   })
 
   it('should delete a GitRepository', () => {
-    expect(api.createNamespacedGitRepository).toHaveBeenCalledWith(
+    expect(api.deleteNamespacedGitRepository).toHaveBeenCalledWith(
       'mock',
       'mock-ns'
+    )
+  })
+})
+
+describe('#rollout', () => {
+  let api: any
+
+  beforeEach(async () => {
+    api = {
+      patchNamespacedKustomization: jest.fn()
+    }
+    const d = fluxDeploy(mockDeploy, api)
+    await d.rollout()
+  })
+
+  it('should patch a Kustomization', () => {
+    const patch = [
+      {
+        op: 'replace',
+        path: '/spec/postBuild/substitute/image_tag',
+        value: 'latest'
+      }
+    ]
+    expect(api.patchNamespacedKustomization).toHaveBeenCalledWith(
+      'mock',
+      'mock-ns',
+      patch
+    )
+  })
+})
+
+describe('#rolloutOrDeploy', () => {
+  it('should patch a Kustomization when one exists', async () => {
+    const api: any = {
+      getNamespacedKustomization: jest
+        .fn()
+        .mockImplementation(async () => Promise.resolve(mockKustomization)),
+      patchNamespacedKustomization: jest.fn()
+    }
+    const d = fluxDeploy(mockDeploy, api)
+    await d.deployOrRollout()
+
+    const patch = [
+      {
+        op: 'replace',
+        path: '/spec/postBuild/substitute/image_tag',
+        value: 'latest'
+      }
+    ]
+    expect(api.getNamespacedKustomization).toHaveBeenCalledWith(
+      'mock',
+      'mock-ns'
+    )
+    expect(api.patchNamespacedKustomization).toHaveBeenCalledWith(
+      'mock',
+      'mock-ns',
+      patch
+    )
+  })
+
+  it('should create a Kustomization if it does not exist', async () => {
+    const api: any = {
+      getNamespacedKustomization: jest.fn(),
+      createNamespacedKustomization: jest.fn(),
+      createNamespacedGitRepository: jest.fn()
+    }
+    const d = fluxDeploy(mockDeploy, api)
+    await d.deployOrRollout()
+
+    expect(api.createNamespacedKustomization).toHaveBeenCalledWith(
+      'mock',
+      'mock-ns',
+      mockKustomization
     )
   })
 })
