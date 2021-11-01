@@ -1,4 +1,4 @@
-import {describe, expect, it, beforeEach} from '@jest/globals'
+import {describe, expect, it, beforeEach, afterEach} from '@jest/globals'
 import nock from 'nock'
 import {K8sApi} from '../src/api'
 
@@ -6,6 +6,10 @@ import {mockGitRepo, mockKustomization} from './mocks'
 
 beforeEach(() => {
   nock.disableNetConnect()
+})
+
+afterEach(() => {
+  nock.cleanAll()
 })
 
 describe('#createNamespacedGitRepository', () => {
