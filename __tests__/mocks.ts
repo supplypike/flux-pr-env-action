@@ -27,7 +27,7 @@ export const mockKustomization: KustomizationSpec = {
   postBuild: {
     substitute: {
       image_tag: 'latest',
-      preview_name: 'mock'
+      branch: 'main'
     }
   },
   interval: '1m0s'
