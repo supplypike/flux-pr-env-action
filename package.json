@@ -28,7 +28,8 @@
     "@actions/core": "^1.6.0",
     "@actions/github": "^5.0.0",
     "@kubernetes/client-node": "^0.13.2",
-    "@octokit/webhooks-types": "^4.13.1"
+    "@octokit/webhooks-types": "^4.13.1",
+    "nock": "^13.1.4"
   },
   "devDependencies": {
     "@types/node": "^16.11.6",
