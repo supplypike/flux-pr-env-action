@@ -1,12 +1,24 @@
 {
-    "plugins": ["jest", "@typescript-eslint"],
+    "plugins": ["@typescript-eslint"],
     "extends": ["plugin:github/recommended"],
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
       "ecmaVersion": 9,
       "sourceType": "module",
-      "project": "./tsconfig.json"
+      "project": ["./tsconfig.json"]
     },
+    "overrides": [
+      {
+        "files": ["__tests__/**"],
+        "plugins": ["jest"],
+        "rules": {
+          "@typescript-eslint/unbound-method": "off",
+          "@typescript-eslint/no-explicit-any": "off",
+          "filenames/match-regex": "off",
+          "jest/unbound-method": "error"
+        }
+      }
+    ],
     "rules": {
       "i18n-text/no-en": "off",
       "eslint-comments/no-use": "off",

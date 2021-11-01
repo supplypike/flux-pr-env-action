@@ -1,4 +1,6 @@
 {
+    "jest.autoRun": {"watch": true, "onStartup": ["all-tests"]},
     "editor.formatOnSave": true,
-    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "jest.showCoverageOnLoad": true
 }
