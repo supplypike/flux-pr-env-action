@@ -12,6 +12,7 @@ const INPUT_GIT_SECRET_NAME = 'secretName'
 const INPUT_DEPLOY_IMAGE = 'deployTag'
 const INPUT_NAMESPACE = 'namespace'
 const INPUT_CMD = 'cmd'
+const INPUT_SERVICENAME = 'serviceName'
 const CMD_DEPLOY = 'deploy'
 const CMD_DESTROY = 'destroy'
 const EVENT_PULL_REQUEST = 'pull_request'
@@ -26,7 +27,7 @@ async function run(): Promise<void> {
     const {repo, ref} = payload.pull_request.head
     const branch = slugurlref(ref)
     const {clone_url} = repo
-    const name = slugurlref(`${repo.name}-${branch}`)
+    const repoName = slugurlref(`${repo.name}-${branch}`)
 
     const gitSecret = core.getInput(INPUT_GIT_SECRET_NAME, {required: true})
     const pipelineRepo = core.getInput(INPUT_PIPELINE_REPO) || clone_url
@@ -34,6 +35,7 @@ async function run(): Promise<void> {
     const namespace = core.getInput(INPUT_NAMESPACE, {required: true})
     const deployTag = core.getInput(INPUT_DEPLOY_IMAGE, {required: true})
     const cmd = core.getInput(INPUT_CMD, {required: true})
+    const name = core.getInput(INPUT_SERVICENAME) || repoName
 
     const deploy = fluxDeploy({
       name,
