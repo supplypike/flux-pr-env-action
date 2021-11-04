@@ -3,6 +3,7 @@ import * as github from '@actions/github'
 import {HttpError} from '@kubernetes/client-node'
 import {PullRequestEvent} from '@octokit/webhooks-types' // eslint-disable-line import/no-unresolved
 import {fluxDeploy} from './deploy'
+import {handlePullRequest} from './pullrequest'
 
 import {slugurlref} from './slug'
 
@@ -47,29 +48,7 @@ async function run(): Promise<void> {
       imageTag: deployTag
     })
 
-    let hasLabel =
-      payload.pull_request.labels.findIndex(l => l.name === 'preview') > -1
-    if (payload.action === 'labeled' || payload.action === 'unlabeled') {
-      hasLabel = payload.label.name === 'preview'
-    }
-
-    if (!hasLabel) {
-      core.info('No "preview" tag, gracefully exiting')
-      return
-    }
-
-    if (
-      payload.action === 'labeled' ||
-      payload.action === 'synchronize' ||
-      payload.action === 'opened' ||
-      payload.action === 'reopened'
-    ) {
-      return await deploy.deployOrRollout()
-    }
-
-    if (payload.action === 'unlabeled' || payload.action === 'closed') {
-      return await deploy.destroy()
-    }
+    await handlePullRequest(payload, deploy)
   } catch (error) {
     if (error instanceof HttpError) {
       core.info(`HttpError ${error.statusCode}: ${JSON.stringify(error.body)}`)

@@ -1,6 +1,6 @@
 import {describe, expect, it, jest, beforeEach} from '@jest/globals'
 import {fluxDeploy} from '../src/deploy'
-import {mockGitRepo, mockDeploy, mockKustomization} from './mocks'
+import {mockGitRepo, mockDeploy, mockKustomization} from './mocks/mocks'
 
 jest.mock('@actions/core')
 
