@@ -11,10 +11,7 @@ const INPUT_PIPELINE_REPO = 'pipelineRepo'
 const INPUT_GIT_SECRET_NAME = 'secretName'
 const INPUT_DEPLOY_IMAGE = 'deployTag'
 const INPUT_NAMESPACE = 'namespace'
-const INPUT_CMD = 'cmd'
 const INPUT_SERVICENAME = 'serviceName'
-const CMD_DEPLOY = 'deploy'
-const CMD_DESTROY = 'destroy'
 const EVENT_PULL_REQUEST = 'pull_request'
 
 async function run(): Promise<void> {
@@ -34,7 +31,6 @@ async function run(): Promise<void> {
     const pipelinePath = core.getInput(INPUT_PIPELINE_PATH, {required: true})
     const namespace = core.getInput(INPUT_NAMESPACE, {required: true})
     const deployTag = core.getInput(INPUT_DEPLOY_IMAGE, {required: true})
-    const cmd = core.getInput(INPUT_CMD, {required: true})
     const name = core.getInput(INPUT_SERVICENAME) || repoName
 
     const deploy = fluxDeploy({
@@ -51,12 +47,28 @@ async function run(): Promise<void> {
       imageTag: deployTag
     })
 
-    if (cmd === CMD_DESTROY) {
-      await deploy.destroy()
-    } else if (cmd === CMD_DEPLOY) {
-      await deploy.deployOrRollout()
-    } else {
-      throw new Error(`Input "cmd" must be "destroy" or "deploy"`)
+    let hasLabel =
+      payload.pull_request.labels.findIndex(l => l.name === 'preview') > -1
+    if (payload.action === 'labeled' || payload.action === 'unlabeled') {
+      hasLabel = payload.label.name === 'preview'
+    }
+
+    if (!hasLabel) {
+      core.info('No "preview" tag, gracefully exiting')
+      return
+    }
+
+    if (
+      payload.action === 'labeled' ||
+      payload.action === 'synchronize' ||
+      payload.action === 'opened' ||
+      payload.action === 'reopened'
+    ) {
+      return await deploy.deployOrRollout()
+    }
+
+    if (payload.action === 'unlabeled' || payload.action === 'closed') {
+      return await deploy.destroy()
     }
   } catch (error) {
     if (error instanceof HttpError) {
