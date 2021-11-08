@@ -1,8 +1,10 @@
-import {describe, expect, it, beforeEach, afterEach} from '@jest/globals'
+import {describe, expect, it, beforeEach, afterEach, jest} from '@jest/globals'
 import nock from 'nock'
 import {K8sApi} from '../src/api'
 
 import {mockGitRepo, mockKustomization} from './mocks/mocks'
+
+jest.mock('@actions/core')
 
 beforeEach(() => {
   nock.disableNetConnect()

@@ -27,10 +27,9 @@ export interface Deploy {
 export function fluxDeploy(d: FluxDeployConfig, api = K8sApi()): Deploy {
   async function deploy(): Promise<void> {
     core.info(
-      `deploying preview ${d.namespace}/${d.name} with tag ${d.imageTag}`
+      `deploying preview "${d.namespace}/${d.name}" with tag "${d.imageTag}"`
     )
 
-    core.info(`creating Kustomization`)
     const kustomization: KustomizationSpec = {
       interval: '1m0s',
       path: d.kustomization.path,
@@ -49,7 +48,6 @@ export function fluxDeploy(d: FluxDeployConfig, api = K8sApi()): Deploy {
     }
     await api.createNamespacedKustomization(d.name, d.namespace, kustomization)
 
-    core.info(`creating GitRepository`)
     const gitRepo: GitRepositorySpec = {
       interval: '1m0s',
       ref: {
@@ -63,9 +61,7 @@ export function fluxDeploy(d: FluxDeployConfig, api = K8sApi()): Deploy {
     await api.createNamespacedGitRepository(d.name, d.namespace, gitRepo)
   }
   async function destroy(): Promise<void> {
-    core.info(`removing kustomization ${d.name}`)
     await api.deleteNamespacedKustomization(d.name, d.namespace)
-    core.info(`removing gitrepository ${d.name}`)
     await api.deleteNamespacedGitRepository(d.name, d.namespace)
   }
 

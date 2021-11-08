@@ -13,6 +13,7 @@ const INPUT_GIT_SECRET_NAME = 'secretName'
 const INPUT_DEPLOY_IMAGE = 'deployTag'
 const INPUT_NAMESPACE = 'namespace'
 const INPUT_SERVICENAME = 'serviceName'
+const INPUT_SKIP_CHECK = 'skipCheck'
 const EVENT_PULL_REQUEST = 'pull_request'
 
 async function run(): Promise<void> {
@@ -33,6 +34,7 @@ async function run(): Promise<void> {
     const namespace = core.getInput(INPUT_NAMESPACE, {required: true})
     const deployTag = core.getInput(INPUT_DEPLOY_IMAGE, {required: true})
     const serviceName = core.getInput(INPUT_SERVICENAME) || repoName
+    const skipCheck = core.getBooleanInput(INPUT_SKIP_CHECK)
     const name = slugurlref(`${serviceName}-${branch}`)
 
     const deploy = fluxDeploy({
@@ -49,7 +51,11 @@ async function run(): Promise<void> {
       imageTag: deployTag
     })
 
-    await handlePullRequest(payload, deploy)
+    if (skipCheck) {
+      await deploy.deployOrRollout()
+    } else {
+      await handlePullRequest(payload, deploy)
+    }
   } catch (error) {
     if (error instanceof HttpError) {
       core.info(`HttpError ${error.statusCode}: ${JSON.stringify(error.body)}`)
