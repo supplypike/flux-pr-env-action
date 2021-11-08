@@ -25,14 +25,15 @@ async function run(): Promise<void> {
     const {repo, ref} = payload.pull_request.head
     const branch = slugurlref(ref)
     const {clone_url} = repo
-    const repoName = slugurlref(`${repo.name}-${branch}`)
+    const repoName = `${repo.name}-${branch}`
 
     const gitSecret = core.getInput(INPUT_GIT_SECRET_NAME, {required: true})
     const pipelineRepo = core.getInput(INPUT_PIPELINE_REPO) || clone_url
     const pipelinePath = core.getInput(INPUT_PIPELINE_PATH, {required: true})
     const namespace = core.getInput(INPUT_NAMESPACE, {required: true})
     const deployTag = core.getInput(INPUT_DEPLOY_IMAGE, {required: true})
-    const name = core.getInput(INPUT_SERVICENAME) || repoName
+    const serviceName = core.getInput(INPUT_SERVICENAME) || repoName
+    const name = slugurlref(`${serviceName}-${branch}`)
 
     const deploy = fluxDeploy({
       name,
