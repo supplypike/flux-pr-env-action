@@ -44,4 +44,5 @@ jobs:
       - uses: ./
         with:
           namespace: previews
-          cmd: deploy
+          skipCheck: true
+    

@@ -27,6 +27,9 @@ inputs:
   serviceName:
     required: false
     description: override service name, defaults to name of repo
+  skipCheck:
+    required: false
+    description: skips checking PR event and just deploy
 runs:
   using: 'node12'
   main: 'dist/index.js'
