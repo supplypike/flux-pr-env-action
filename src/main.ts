@@ -3,6 +3,7 @@ import * as github from '@actions/github'
 import {HttpError} from '@kubernetes/client-node'
 import {PullRequestEvent} from '@octokit/webhooks-types' // eslint-disable-line import/no-unresolved
 import {fluxDeploy} from './deploy'
+import {handlePullRequest} from './pullrequest'
 
 import {slugurlref} from './slug'
 
@@ -11,10 +12,7 @@ const INPUT_PIPELINE_REPO = 'pipelineRepo'
 const INPUT_GIT_SECRET_NAME = 'secretName'
 const INPUT_DEPLOY_IMAGE = 'deployTag'
 const INPUT_NAMESPACE = 'namespace'
-const INPUT_CMD = 'cmd'
 const INPUT_SERVICENAME = 'serviceName'
-const CMD_DEPLOY = 'deploy'
-const CMD_DESTROY = 'destroy'
 const EVENT_PULL_REQUEST = 'pull_request'
 
 async function run(): Promise<void> {
@@ -34,7 +32,6 @@ async function run(): Promise<void> {
     const pipelinePath = core.getInput(INPUT_PIPELINE_PATH, {required: true})
     const namespace = core.getInput(INPUT_NAMESPACE, {required: true})
     const deployTag = core.getInput(INPUT_DEPLOY_IMAGE, {required: true})
-    const cmd = core.getInput(INPUT_CMD, {required: true})
     const name = core.getInput(INPUT_SERVICENAME) || repoName
 
     const deploy = fluxDeploy({
@@ -51,13 +48,7 @@ async function run(): Promise<void> {
       imageTag: deployTag
     })
 
-    if (cmd === CMD_DESTROY) {
-      await deploy.destroy()
-    } else if (cmd === CMD_DEPLOY) {
-      await deploy.deployOrRollout()
-    } else {
-      throw new Error(`Input "cmd" must be "destroy" or "deploy"`)
-    }
+    await handlePullRequest(payload, deploy)
   } catch (error) {
     if (error instanceof HttpError) {
       core.info(`HttpError ${error.statusCode}: ${JSON.stringify(error.body)}`)

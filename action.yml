@@ -24,12 +24,6 @@ inputs:
   namespace:
     required: true
     description: kubernetes namespace to target
-  cmd:
-    required: true
-    description: |
-      command to run - possible values:
-        deploy
-        destroy
   serviceName:
     required: false
     description: override service name, defaults to name of repo

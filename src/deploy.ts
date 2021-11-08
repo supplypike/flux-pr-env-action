@@ -19,9 +19,7 @@ export interface FluxDeployConfig {
 }
 
 export interface Deploy {
-  deploy(): Promise<void>
   destroy(): Promise<void>
-  rollout(): Promise<void>
   // perform a rollout if the deploy already exists
   deployOrRollout(): Promise<void>
 }
@@ -106,9 +104,7 @@ export function fluxDeploy(d: FluxDeployConfig, api = K8sApi()): Deploy {
   }
 
   return {
-    deploy,
     destroy,
-    rollout,
     deployOrRollout
   }
 }
