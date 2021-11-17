@@ -20,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: "Create cluster"
-        uses: AbsaOSS/k3d-action@v1.5.0
+        uses: AbsaOSS/k3d-action@v1.6.0
         with:
           cluster-name: "test-cluster-1"
           args: --agents 1
