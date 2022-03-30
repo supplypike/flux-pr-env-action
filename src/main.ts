@@ -41,7 +41,8 @@ async function run(): Promise<void> {
       name,
       namespace,
       kustomization: {
-        path: pipelinePath
+        path: pipelinePath,
+        branch
       },
       gitRepo: {
         branch: removeRef(ref),
