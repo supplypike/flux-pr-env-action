@@ -11,7 +11,8 @@ export const mockDeploy: FluxDeployConfig = {
   name: 'mock',
   namespace: 'mock-ns',
   kustomization: {
-    path: './kustomization/mock'
+    path: './kustomization/mock',
+    branch: 'main'
   },
   gitRepo: {
     branch: 'main',

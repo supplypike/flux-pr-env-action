@@ -5,7 +5,7 @@ import {PullRequestEvent} from '@octokit/webhooks-types' // eslint-disable-line 
 import {fluxDeploy} from './deploy'
 import {handlePullRequest} from './pullrequest'
 
-import {slugurlref} from './slug'
+import {removeRef, slugurlref} from './slug'
 
 const INPUT_PIPELINE_PATH = 'pipelinePath'
 const INPUT_PIPELINE_REPO = 'pipelineRepo'
@@ -41,10 +41,11 @@ async function run(): Promise<void> {
       name,
       namespace,
       kustomization: {
-        path: pipelinePath
+        path: pipelinePath,
+        branch
       },
       gitRepo: {
-        branch,
+        branch: removeRef(ref),
         secretName: gitSecret,
         url: pipelineRepo
       },

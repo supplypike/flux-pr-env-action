@@ -9,6 +9,7 @@ export interface FluxDeployConfig {
   namespace: string
   kustomization: {
     path: string
+    branch: string
   }
   gitRepo: {
     branch: string
@@ -41,7 +42,7 @@ export function fluxDeploy(d: FluxDeployConfig, api = K8sApi()): Deploy {
       targetNamespace: d.namespace,
       postBuild: {
         substitute: {
-          branch: d.gitRepo.branch,
+          branch: d.kustomization.branch,
           image_tag: d.imageTag
         }
       }
