@@ -61,7 +61,7 @@ export default {
       'https://api.github.com/repos/Codertocat/Hello-World/statuses/ec26c3e57ca3a959ca5aad62de7213c562f8c821',
     head: {
       label: 'Codertocat:changes',
-      ref: 'changes',
+      ref: 'dependabot/npm_and_yarn/url-parse-1.5.10',
       sha: 'ec26c3e57ca3a959ca5aad62de7213c562f8c821',
       user: {
         login: 'Codertocat',

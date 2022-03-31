@@ -12,10 +12,10 @@ export const mockDeploy: FluxDeployConfig = {
   namespace: 'mock-ns',
   kustomization: {
     path: './kustomization/mock',
-    branch: 'main'
+    branch: 'dependabot-npm-and-yarn-url-parse-1-5-10'
   },
   gitRepo: {
-    branch: 'main',
+    branch: 'dependabot/npm_and_yarn/url-parse-1.5.10',
     secretName: 'secret',
     url: 'https://github.com/supplypike/flux-pr-env-action'
   },
@@ -33,14 +33,14 @@ export const mockKustomization: KustomizationSpec = {
   postBuild: {
     substitute: {
       image_tag: 'latest',
-      branch: 'main'
+      branch: 'dependabot-npm-and-yarn-url-parse-1-5-10'
     }
   },
   interval: '1m0s'
 }
 
 export const mockGitRepo: GitRepositorySpec = {
-  ref: {branch: 'main'},
+  ref: {branch: 'dependabot/npm_and_yarn/url-parse-1.5.10'},
   url: 'https://github.com/supplypike/flux-pr-env-action',
   secretRef: {
     name: 'secret'
