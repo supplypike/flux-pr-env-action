@@ -1,8 +1,3 @@
-import {
-  PullRequest,
-  PullRequestEvent,
-  PullRequestOpenedEvent
-} from '@octokit/webhooks-types'
 import {FluxDeployConfig} from '../../src/deploy'
 import {GitRepositorySpec} from '../../src/gitrepository'
 import {KustomizationSpec} from '../../src/kustomization'

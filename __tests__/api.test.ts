@@ -4,6 +4,9 @@ import {K8sApi} from '../src/api'
 
 import {mockGitRepo, mockKustomization} from './mocks/mocks'
 
+const testHost =
+  /http:\/\/localhost:8080||0.0.0.0:((6553[0-5])|(655[0-2][0-9])|(65[0-4][0-9]{2})|(6[0-4][0-9]{3})|([1-5][0-9]{4})|([0-5]{0,5})|([0-9]{1,4}))/
+
 jest.mock('@actions/core')
 
 beforeEach(() => {
@@ -17,7 +20,7 @@ afterEach(() => {
 describe('#createNamespacedGitRepository', () => {
   it('POST to gitrepositories API', async () => {
     const api = K8sApi()
-    const scope = nock('http://localhost:8080')
+    const scope = nock(testHost)
       .post(
         '/apis/source.toolkit.fluxcd.io/v1beta1/namespaces/NAMESPACE/gitrepositories'
       )
@@ -32,7 +35,7 @@ describe('#createNamespacedGitRepository', () => {
 describe('#deleteNamespacedGitRepository', () => {
   it('DELETE to gitrepositories API', async () => {
     const api = K8sApi()
-    const scope = nock('http://localhost:8080')
+    const scope = nock(testHost)
       .delete(
         '/apis/source.toolkit.fluxcd.io/v1beta1/namespaces/NAMESPACE/gitrepositories/NAME'
       )
@@ -47,7 +50,7 @@ describe('#deleteNamespacedGitRepository', () => {
 describe('#createNamespacedKustomization', () => {
   it('POST to kustomizations API', async () => {
     const api = K8sApi()
-    const scope = nock('http://localhost:8080')
+    const scope = nock(testHost)
       .post(
         '/apis/kustomize.toolkit.fluxcd.io/v1beta1/namespaces/NAMESPACE/kustomizations'
       )
@@ -66,7 +69,7 @@ describe('#createNamespacedKustomization', () => {
 describe('#getNamespacedKustomization', () => {
   it('GET to kustomizations API', async () => {
     const api = K8sApi()
-    const scope = nock('http://localhost:8080')
+    const scope = nock(testHost)
       .get(
         '/apis/kustomize.toolkit.fluxcd.io/v1beta1/namespaces/NAMESPACE/kustomizations/NAME'
       )
@@ -81,7 +84,7 @@ describe('#getNamespacedKustomization', () => {
 describe('#deleteNamespacedKustomization', () => {
   it('DELETE to kustomizations API', async () => {
     const api = K8sApi()
-    const scope = nock('http://localhost:8080')
+    const scope = nock(testHost)
       .delete(
         '/apis/kustomize.toolkit.fluxcd.io/v1beta1/namespaces/NAMESPACE/kustomizations/NAME'
       )
@@ -103,7 +106,7 @@ describe('#patchNamespacedKustomization', () => {
       }
     ]
     const api = K8sApi()
-    const scope = nock('http://localhost:8080')
+    const scope = nock(testHost)
       .patch(
         '/apis/kustomize.toolkit.fluxcd.io/v1beta1/namespaces/NAMESPACE/kustomizations/NAME',
         patch

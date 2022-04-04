@@ -1,3 +1,5 @@
+import {PullRequestEvent} from '@octokit/webhooks-types'
+
 export default {
   action: 'opened',
   number: 2,
@@ -220,7 +222,10 @@ export default {
         allow_squash_merge: true,
         allow_merge_commit: true,
         allow_rebase_merge: true,
-        delete_branch_on_merge: false
+        delete_branch_on_merge: false,
+        is_template: false,
+        topics: [],
+        visibility: 'private'
       }
     },
     base: {
@@ -384,7 +389,10 @@ export default {
         allow_squash_merge: true,
         allow_merge_commit: true,
         allow_rebase_merge: true,
-        delete_branch_on_merge: false
+        delete_branch_on_merge: false,
+        is_template: false,
+        topics: [],
+        visibility: 'private'
       }
     },
     _links: {
@@ -426,7 +434,37 @@ export default {
     commits: 1,
     additions: 1,
     deletions: 1,
-    changed_files: 1
+    changed_files: 1,
+    auto_merge: {
+      enabled_by: {
+        login: 'Codertocat',
+        id: 21031067,
+        node_id: 'MDQ6VXNlcjIxMDMxMDY3',
+        avatar_url: 'https://avatars1.githubusercontent.com/u/21031067?v=4',
+        gravatar_id: '',
+        url: 'https://api.github.com/users/Codertocat',
+        html_url: 'https://github.com/Codertocat',
+        followers_url: 'https://api.github.com/users/Codertocat/followers',
+        following_url:
+          'https://api.github.com/users/Codertocat/following{/other_user}',
+        gists_url: 'https://api.github.com/users/Codertocat/gists{/gist_id}',
+        starred_url:
+          'https://api.github.com/users/Codertocat/starred{/owner}{/repo}',
+        subscriptions_url:
+          'https://api.github.com/users/Codertocat/subscriptions',
+        organizations_url: 'https://api.github.com/users/Codertocat/orgs',
+        repos_url: 'https://api.github.com/users/Codertocat/repos',
+        events_url: 'https://api.github.com/users/Codertocat/events{/privacy}',
+        received_events_url:
+          'https://api.github.com/users/Codertocat/received_events',
+        type: 'User',
+        site_admin: false
+      },
+      merge_method: 'squash',
+      commit_title: 'test',
+      commit_message: 'test'
+    },
+    active_lock_reason: null
   },
   repository: {
     id: 186853002,
@@ -554,7 +592,10 @@ export default {
     forks: 0,
     open_issues: 2,
     watchers: 0,
-    default_branch: 'master'
+    default_branch: 'master',
+    is_template: false,
+    topics: [],
+    visibility: 'private'
   },
   sender: {
     login: 'Codertocat',
@@ -579,4 +620,4 @@ export default {
     type: 'User',
     site_admin: false
   }
-}
+} as PullRequestEvent
