@@ -1,18 +1,12 @@
 import {describe, expect, it, beforeEach, afterEach, jest} from '@jest/globals'
 import nock from 'nock'
+import path from 'path'
 import {K8sApi} from '../src/api'
 
 import {mockGitRepo, mockKustomization} from './mocks/mocks'
 
-const OR_REGEX = '|'
-const LOCALHOST_8080_REGEX = 'http://localhost:8080'
-const ANY_PORT_REGEX =
-  '((6553[0-5])|(655[0-2][0-9])|(65[0-4][0-9]{2})|(6[0-4][0-9]{3})|([1-5][0-9]{4})|([0-5]{0,5})|([0-9]{1,4}))'
-const NO_NET_ANY_PORT_REGEX = `0.0.0.0:${ANY_PORT_REGEX}`
-
-const NOCK_HOSTS = [LOCALHOST_8080_REGEX, NO_NET_ANY_PORT_REGEX]
-
-const NOCK_HOST = new RegExp(NOCK_HOSTS.join(OR_REGEX))
+process.env.KUBECONFIG = path.resolve(__dirname, 'mocks/kubeconfig.yml')
+const NOCK_HOST = 'http://localhost:8080'
 
 jest.mock('@actions/core')
 
