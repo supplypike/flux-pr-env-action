@@ -22,12 +22,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-        if: ${{ github.event_name == 'pull_request'}}
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-
-      - uses: actions/checkout@v3
-        if: ${{ github.event_name != 'pull_request'}}
 
       - name: Set Node.js 12.x
         uses: actions/setup-node@v3
@@ -38,7 +32,7 @@ jobs:
         run: npm ci
 
       - name: Rebuild the dist/ directory
-        run: npm run all
+        run: npm run build
 
       - name: Compare the expected and actual dist/ directories
         run: |
