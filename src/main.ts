@@ -20,6 +20,7 @@ interface FormattedInputs {
   payload: PullRequestEvent
   ref: string
   branch: string
+  branchKubeNameClean: string
   repoName: string
   gitSecret: string
   pipelineRepo: string
@@ -36,9 +37,10 @@ export function formatInputs(
   getBooleanInput = core.getBooleanInput
 ): FormattedInputs {
   const {repo, ref} = payload.pull_request.head
-  const branch = slugurlref(ref)
+  const branch = removeRef(ref)
+  const branchKubeNameClean = slugurlref(ref)
   const {clone_url} = repo
-  const repoName = `${repo.name}-${branch}`
+  const repoName = `${repo.name}-${branchKubeNameClean}`
 
   const gitSecret = getInput(INPUT_GIT_SECRET_NAME, {required: true})
   const pipelineRepo = getInput(INPUT_PIPELINE_REPO) || clone_url
@@ -47,12 +49,13 @@ export function formatInputs(
   const deployTag = getInput(INPUT_DEPLOY_IMAGE, {required: true})
   const serviceName = getInput(INPUT_SERVICENAME) || repoName
   const skipCheck = getBooleanInput(INPUT_SKIP_CHECK)
-  const name = slugurlref(`${serviceName}-${branch}`)
+  const name = slugurlref(`${serviceName}-${branchKubeNameClean}`)
 
   return {
     payload,
     ref,
     branch,
+    branchKubeNameClean,
     repoName,
     gitSecret,
     pipelineRepo,
@@ -72,8 +75,8 @@ async function run(): Promise<void> {
 
     const {
       payload,
-      ref,
       branch,
+      branchKubeNameClean,
       gitSecret,
       pipelineRepo,
       pipelinePath,
@@ -88,10 +91,10 @@ async function run(): Promise<void> {
       namespace,
       kustomization: {
         path: pipelinePath,
-        branch
+        branch: branchKubeNameClean
       },
       gitRepo: {
-        branch: removeRef(ref),
+        branch,
         secretName: gitSecret,
         url: pipelineRepo
       },
