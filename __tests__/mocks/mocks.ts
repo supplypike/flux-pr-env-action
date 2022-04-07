@@ -28,7 +28,7 @@ export const mockKustomization: KustomizationSpec = {
   postBuild: {
     substitute: {
       image_tag: 'latest',
-      branch: 'dependabot-npm-and-yarn-url-parse-1-5-10'
+      branch: 'dependabot/npm_and_yarn/url-parse-1.5.10'
     }
   },
   interval: '1m0s'
