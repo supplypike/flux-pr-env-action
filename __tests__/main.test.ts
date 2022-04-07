@@ -12,7 +12,7 @@ describe('formatInputs', () => {
         return false
       })
     )
-    expect(results.ref).toEqual('dependabot/npm_and_yarn/url-parse-1.5.10')
+    expect(results.branch).toEqual('dependabot/npm_and_yarn/url-parse-1.5.10')
   })
 
   it('returns removes invalid name characters', () => {
@@ -25,6 +25,8 @@ describe('formatInputs', () => {
         return false
       })
     )
-    expect(results.branch).toEqual('dependabot-npm-and-yarn-url-parse-1-5-10')
+    expect(results.branchKubeNameClean).toEqual(
+      'dependabot-npm-and-yarn-url-parse-1-5-10'
+    )
   })
 })
