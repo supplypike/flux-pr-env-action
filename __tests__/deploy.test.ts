@@ -10,7 +10,8 @@ describe('#destroy', () => {
   beforeEach(async () => {
     api = {
       deleteNamespacedKustomization: jest.fn(),
-      deleteNamespacedGitRepository: jest.fn()
+      deleteNamespacedGitRepository: jest.fn(),
+      deleteNamespacedHelmRelease: jest.fn()
     }
     const d = fluxDeploy(mockDeploy, api)
     await d.destroy()
@@ -23,8 +24,15 @@ describe('#destroy', () => {
     )
   })
 
-  it('should delete a GitRepository', () => {
-    expect(api.deleteNamespacedGitRepository).toHaveBeenCalledWith(
+  it('should delete a Kustomization', () => {
+    expect(api.deleteNamespacedKustomization).toHaveBeenCalledWith(
+      'mock',
+      'mock-ns'
+    )
+  })
+
+  it('should delete a HelmRelease', () => {
+    expect(api.deleteNamespacedHelmRelease).toHaveBeenCalledWith(
       'mock',
       'mock-ns'
     )

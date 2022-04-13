@@ -3,6 +3,7 @@ import * as core from '@actions/core'
 
 import {kustomization, KustomizationSpec} from './kustomization'
 import {gitRepository, GitRepositorySpec} from './gitrepository'
+import {helmRelease} from './helmrelease'
 import {ActionOnInvalid} from '@kubernetes/client-node/dist/config_types'
 
 export interface Api {
@@ -28,6 +29,7 @@ export interface Api {
     spec: GitRepositorySpec
   ): Promise<void>
   deleteNamespacedGitRepository(name: string, namespace: string): Promise<void>
+  deleteNamespacedHelmRelease(name: string, namespace: string): Promise<void>
 }
 
 interface K8sPatch {
@@ -197,6 +199,17 @@ export function K8sApi(): Api {
     )
   }
 
+  async function deleteNamespacedHelmRelease(
+    name: string,
+    namespace: string
+  ): Promise<void> {
+    debug('DELETE', helmRelease, name)
+    await customApi.deleteNamespacedCustomObject(
+      ...namespacedCustomObjectArgs(namespace, helmRelease),
+      name
+    )
+  }
+
   return {
     getNamespacedKustomization,
     createNamespacedKustomization,
@@ -204,6 +217,7 @@ export function K8sApi(): Api {
     deleteNamespacedKustomization,
 
     createNamespacedGitRepository,
-    deleteNamespacedGitRepository
+    deleteNamespacedGitRepository,
+    deleteNamespacedHelmRelease
   }
 }

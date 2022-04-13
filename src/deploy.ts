@@ -64,6 +64,7 @@ export function fluxDeploy(d: FluxDeployConfig, api = K8sApi()): Deploy {
   async function destroy(): Promise<void> {
     await api.deleteNamespacedKustomization(d.name, d.namespace)
     await api.deleteNamespacedGitRepository(d.name, d.namespace)
+    await api.deleteNamespacedHelmRelease(d.name, d.namespace)
   }
 
   async function rollout(): Promise<void> {
