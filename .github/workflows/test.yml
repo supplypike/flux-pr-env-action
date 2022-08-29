@@ -11,18 +11,31 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Set Node.js 16.x
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: .tool-versions
+          cache: 'npm'
       - run: |
-          npm install
+          npm ci
       - run: |
           npm run all
+      - uses: sonarsource/sonarqube-scan-action@v1.1.0
+        with:
+          args: >
+            -D sonar.projectKey=supplypike_flux-pr-env-action
+            -D sonar.projectName=flux-pr-env-action
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
   test: # make sure the action works on a clean machine without building
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: "Create cluster"
+      - name: 'Create cluster'
         uses: AbsaOSS/k3d-action@v2
         with:
-          cluster-name: "test-cluster-1"
+          cluster-name: 'test-cluster-1'
           args: --agents 1
       - name: Testing
         run: |
@@ -45,4 +58,3 @@ jobs:
         with:
           namespace: previews
           skipCheck: true
-    

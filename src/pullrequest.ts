@@ -1,4 +1,4 @@
-import {PullRequestEvent} from '@octokit/webhooks-types' // eslint-disable-line import/no-unresolved
+import {PullRequestEvent} from '@octokit/webhooks-types'
 import {Deploy} from './deploy'
 
 export async function handlePullRequest(

@@ -16,4 +16,4 @@ jobs:
         uses: supplypike/jira-pr-link-action@v1
         with:
           ignore-author: dependabot[bot],supplypiker
-          project: "(SRENEW|SRENEW)"
+          project: '(SRENEW|SRENEW)'
