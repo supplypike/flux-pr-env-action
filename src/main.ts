@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import * as github from '@actions/github'
 import {HttpError} from '@kubernetes/client-node'
-import {PullRequestEvent} from '@octokit/webhooks-types' // eslint-disable-line import/no-unresolved
+import {PullRequestEvent} from '@octokit/webhooks-types'
 import {fluxDeploy} from './deploy'
 import {handlePullRequest} from './pullrequest'
 

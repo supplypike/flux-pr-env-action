@@ -1,5 +1,6 @@
 import {PullRequestEvent} from '@octokit/webhooks-types'
 
+// @see https://github.com/octokit/webhooks/blob/master/payload-examples/api.github.com/pull_request/opened.payload.json
 export default {
   action: 'opened',
   number: 2,
@@ -49,7 +50,17 @@ export default {
     assignees: [],
     requested_reviewers: [],
     requested_teams: [],
-    labels: [],
+    labels: [
+      {
+        id: 1362934389,
+        node_id: 'MDU6TGFiZWwxMzYyOTM0Mzg5',
+        url: 'https://api.github.com/repos/Codertocat/Hello-World/labels/bug',
+        name: 'bug',
+        color: 'd73a4a',
+        default: true,
+        description: "Something isn't working"
+      }
+    ],
     milestone: null,
     commits_url:
       'https://api.github.com/repos/Codertocat/Hello-World/pulls/2/commits',
@@ -63,7 +74,7 @@ export default {
       'https://api.github.com/repos/Codertocat/Hello-World/statuses/ec26c3e57ca3a959ca5aad62de7213c562f8c821',
     head: {
       label: 'Codertocat:changes',
-      ref: 'refs/heads/dependabot/npm_and_yarn/url-parse-1.5.10',
+      ref: 'dependabot/npm_and_yarn/url-parse-1.5.10',
       sha: 'ec26c3e57ca3a959ca5aad62de7213c562f8c821',
       user: {
         login: 'Codertocat',
@@ -219,18 +230,15 @@ export default {
         open_issues: 2,
         watchers: 0,
         default_branch: 'master',
-        allow_squash_merge: true,
-        allow_merge_commit: true,
-        allow_rebase_merge: true,
-        delete_branch_on_merge: false,
         is_template: false,
         topics: [],
-        visibility: 'private'
+        visibility: 'public',
+        web_commit_signoff_required: false
       }
     },
     base: {
       label: 'Codertocat:master',
-      ref: 'refs/heads/master',
+      ref: 'refs/head/master',
       sha: 'f95f852bd8fca8fcc58a9a2d6c842781e32a215e',
       user: {
         login: 'Codertocat',
@@ -386,22 +394,17 @@ export default {
         open_issues: 2,
         watchers: 0,
         default_branch: 'master',
-        allow_squash_merge: true,
-        allow_merge_commit: true,
-        allow_rebase_merge: true,
-        delete_branch_on_merge: false,
         is_template: false,
         topics: [],
-        visibility: 'private'
+        visibility: 'public',
+        web_commit_signoff_required: false
       }
     },
     _links: {
       self: {
         href: 'https://api.github.com/repos/Codertocat/Hello-World/pulls/2'
       },
-      html: {
-        href: 'https://github.com/Codertocat/Hello-World/pull/2'
-      },
+      html: {href: 'https://github.com/Codertocat/Hello-World/pull/2'},
       issue: {
         href: 'https://api.github.com/repos/Codertocat/Hello-World/issues/2'
       },
@@ -422,6 +425,8 @@ export default {
       }
     },
     author_association: 'OWNER',
+    auto_merge: null,
+    active_lock_reason: null,
     draft: false,
     merged: false,
     mergeable: null,
@@ -434,37 +439,7 @@ export default {
     commits: 1,
     additions: 1,
     deletions: 1,
-    changed_files: 1,
-    auto_merge: {
-      enabled_by: {
-        login: 'Codertocat',
-        id: 21031067,
-        node_id: 'MDQ6VXNlcjIxMDMxMDY3',
-        avatar_url: 'https://avatars1.githubusercontent.com/u/21031067?v=4',
-        gravatar_id: '',
-        url: 'https://api.github.com/users/Codertocat',
-        html_url: 'https://github.com/Codertocat',
-        followers_url: 'https://api.github.com/users/Codertocat/followers',
-        following_url:
-          'https://api.github.com/users/Codertocat/following{/other_user}',
-        gists_url: 'https://api.github.com/users/Codertocat/gists{/gist_id}',
-        starred_url:
-          'https://api.github.com/users/Codertocat/starred{/owner}{/repo}',
-        subscriptions_url:
-          'https://api.github.com/users/Codertocat/subscriptions',
-        organizations_url: 'https://api.github.com/users/Codertocat/orgs',
-        repos_url: 'https://api.github.com/users/Codertocat/repos',
-        events_url: 'https://api.github.com/users/Codertocat/events{/privacy}',
-        received_events_url:
-          'https://api.github.com/users/Codertocat/received_events',
-        type: 'User',
-        site_admin: false
-      },
-      merge_method: 'squash',
-      commit_title: 'test',
-      commit_message: 'test'
-    },
-    active_lock_reason: null
+    changed_files: 1
   },
   repository: {
     id: 186853002,
@@ -595,7 +570,12 @@ export default {
     default_branch: 'master',
     is_template: false,
     topics: [],
-    visibility: 'private'
+    visibility: 'private',
+    web_commit_signoff_required: false
+  },
+  installation: {
+    id: 1,
+    node_id: 'MDIzOkludGVncmF0aW9uSW5zdGFsbGF0aW9uMQ=='
   },
   sender: {
     login: 'Codertocat',

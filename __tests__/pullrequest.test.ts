@@ -11,16 +11,16 @@ import pull_request_created from './mocks/pull_request_created'
 jest.mock('@actions/core')
 
 let mockDeploy: Deploy
-let destroy: typeof jest.fn
-let deployOrRollout: typeof jest.fn
+let destroy = jest.fn(() => Promise.resolve())
+let deployOrRollout = jest.fn(() => Promise.resolve())
 let payload: PullRequestEvent
 
 beforeEach(() => {
-  destroy = jest.fn()
-  deployOrRollout = jest.fn()
+  destroy = jest.fn(() => Promise.resolve())
+  deployOrRollout = jest.fn(() => Promise.resolve())
   mockDeploy = {
-    destroy: destroy as any,
-    deployOrRollout: deployOrRollout as any
+    destroy,
+    deployOrRollout: deployOrRollout
   }
   payload = JSON.parse(JSON.stringify(pull_request_created))
 })
