@@ -1,8 +1,10 @@
 import {describe, expect, it, jest, beforeEach} from '@jest/globals'
 import {fluxDeploy} from '../src/deploy'
-import {mockDeploy, mockKustomization} from './mocks/mocks'
+import {mockDeploy, mockGitRepo, mockKustomization} from './mocks/mocks'
 
 jest.mock('@actions/core')
+
+const mockName = 'hello-world-dependabot-npm-and-yarn-url-parse-1-5-10'
 
 describe('#destroy', () => {
   let api: any
@@ -19,21 +21,21 @@ describe('#destroy', () => {
 
   it('should delete a GitRepository', () => {
     expect(api.deleteNamespacedGitRepository).toHaveBeenCalledWith(
-      'mock',
+      mockName,
       'mock-ns'
     )
   })
 
   it('should delete a Kustomization', () => {
     expect(api.deleteNamespacedKustomization).toHaveBeenCalledWith(
-      'mock',
+      mockName,
       'mock-ns'
     )
   })
 
   it('should delete a HelmRelease', () => {
     expect(api.deleteNamespacedHelmRelease).toHaveBeenCalledWith(
-      'mock',
+      mockName,
       'mock-ns'
     )
   })
@@ -58,11 +60,11 @@ describe('#rolloutOrDeploy', () => {
       }
     ]
     expect(api.getNamespacedKustomization).toHaveBeenCalledWith(
-      'mock',
+      mockName,
       'mock-ns'
     )
     expect(api.patchNamespacedKustomization).toHaveBeenCalledWith(
-      'mock',
+      mockName,
       'mock-ns',
       patch
     )
@@ -78,9 +80,15 @@ describe('#rolloutOrDeploy', () => {
     await d.deployOrRollout()
 
     expect(api.createNamespacedKustomization).toHaveBeenCalledWith(
-      'mock',
+      mockName,
       'mock-ns',
       mockKustomization
+    )
+
+    expect(api.createNamespacedGitRepository).toHaveBeenCalledWith(
+      mockName,
+      'mock-ns',
+      mockGitRepo
     )
   })
 })

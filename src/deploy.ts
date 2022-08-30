@@ -5,23 +5,32 @@ import {GitRepositorySpec} from './gitrepository'
 import {KustomizationSpec} from './kustomization'
 
 export interface FluxDeployConfig {
+  // name of the resulting Kustomization
+  // should be sanitized to be a valid kubernetes name
   name: string
+  // cluster namespace to deploy the Kustomization
   namespace: string
-  kustomization: {
-    path: string
-    branch: string
-  }
-  gitRepo: {
-    branch: string
+  pipeline: {
+    // name of the secret in cluster to reference
     secretName: string
+    // url to git repository containing Kustomization files
     url: string
+    // path to the Kustomization files  inside repository
+    path: string
+    // branch to use as base for Kustomization files, default is 'main'
+    branch: string
   }
+  // container tag to use replacing `${image_tag}` in Kustomization
   imageTag: string
+  // branch name to use replacing `${branch}` in Kustomization
+  // should be sanitized to be a valid kubernetes name
+  branch: string
 }
 
 export interface Deploy {
+  // remove the Kustomization from the cluster
   destroy(): Promise<void>
-  // perform a rollout if the deploy already exists
+  // perform a rollout if the deploy already exists, otherwise deploy
   deployOrRollout(): Promise<void>
 }
 
@@ -33,7 +42,7 @@ export function fluxDeploy(d: FluxDeployConfig, api = K8sApi()): Deploy {
 
     const kustomization: KustomizationSpec = {
       interval: '1m0s',
-      path: d.kustomization.path,
+      path: d.pipeline.path,
       prune: true,
       sourceRef: {
         kind: 'GitRepository',
@@ -42,7 +51,7 @@ export function fluxDeploy(d: FluxDeployConfig, api = K8sApi()): Deploy {
       targetNamespace: d.namespace,
       postBuild: {
         substitute: {
-          branch: d.gitRepo.branch,
+          branch: d.branch,
           image_tag: d.imageTag
         }
       }
@@ -52,11 +61,11 @@ export function fluxDeploy(d: FluxDeployConfig, api = K8sApi()): Deploy {
     const gitRepo: GitRepositorySpec = {
       interval: '1m0s',
       ref: {
-        branch: d.gitRepo.branch
+        branch: d.pipeline.branch
       },
-      url: d.gitRepo.url,
+      url: d.pipeline.url,
       secretRef: {
-        name: d.gitRepo.secretName
+        name: d.pipeline.secretName
       }
     }
     await api.createNamespacedGitRepository(d.name, d.namespace, gitRepo)
