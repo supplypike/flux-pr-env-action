@@ -11,6 +11,10 @@ inputs:
     required: true
     description: path to Flux manifests
     default: './.kustomization/preview'
+  pipelineBranch:
+    required: true
+    description: branch containing Flux manifests
+    default: 'main'
   secretName:
     required: true
     description: |

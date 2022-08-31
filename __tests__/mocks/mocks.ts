@@ -1,42 +1,45 @@
 import {FluxDeployConfig} from '../../src/deploy'
 import {GitRepositorySpec} from '../../src/gitrepository'
 import {KustomizationSpec} from '../../src/kustomization'
+import {FormattedInputs} from '../main'
+
+const mockGitUrl = 'https://github.com/Codertocat/Hello-World.git'
 
 export const mockDeploy: FluxDeployConfig = {
-  name: 'mock',
+  name: 'hello-world-dependabot-npm-and-yarn-url-parse-1-5-10',
   namespace: 'mock-ns',
-  kustomization: {
-    path: './kustomization/mock',
-    branch: 'dependabot-npm-and-yarn-url-parse-1-5-10'
-  },
-  gitRepo: {
-    branch: 'dependabot/npm_and_yarn/url-parse-1.5.10',
+  pipeline: {
+    path: './kustomization/testing-preview',
     secretName: 'secret',
-    url: 'https://github.com/supplypike/flux-pr-env-action'
+    url: mockGitUrl,
+    branch: 'main'
   },
+  branch: 'dependabot-npm-and-yarn-url-parse-1-5-10',
   imageTag: 'latest'
 }
 
 export const mockKustomization: KustomizationSpec = {
-  path: './kustomization/mock',
+  path: './kustomization/testing-preview',
   targetNamespace: 'mock-ns',
   sourceRef: {
-    name: 'mock',
+    name: 'hello-world-dependabot-npm-and-yarn-url-parse-1-5-10',
     kind: 'GitRepository'
   },
   prune: true,
   postBuild: {
     substitute: {
       image_tag: 'latest',
-      branch: 'dependabot/npm_and_yarn/url-parse-1.5.10'
+      branch: 'dependabot-npm-and-yarn-url-parse-1-5-10'
     }
   },
   interval: '1m0s'
 }
 
 export const mockGitRepo: GitRepositorySpec = {
-  ref: {branch: 'dependabot/npm_and_yarn/url-parse-1.5.10'},
-  url: 'https://github.com/supplypike/flux-pr-env-action',
+  ref: {
+    branch: 'main'
+  },
+  url: mockGitUrl,
   secretRef: {
     name: 'secret'
   },
@@ -61,4 +64,23 @@ export const mockPreviewLabel = {
   name: 'preview',
   url: '',
   color: ''
+}
+
+export const mockUnformattedInputs: Record<string, string> = {
+  pipelinePath: './kustomization/testing-preview',
+  secretName: 'secret',
+  deployTag: 'latest',
+  namespace: 'mock-ns'
+}
+
+export const mockFormattedInputs: FormattedInputs = {
+  branchKubeNameClean: 'dependabot-npm-and-yarn-url-parse-1-5-10',
+  gitSecret: 'secret',
+  pipelinePath: './kustomization/testing-preview',
+  pipelineRepo: mockGitUrl,
+  pipelineBranch: 'main',
+  namespace: 'mock-ns',
+  skipCheck: false,
+  name: 'hello-world-dependabot-npm-and-yarn-url-parse-1-5-10',
+  deployTag: 'latest'
 }

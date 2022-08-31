@@ -1,9 +1,9 @@
 import {PullRequestEvent} from '@octokit/webhooks-types'
-import {Deploy} from './deploy'
 
 export async function handlePullRequest(
   payload: PullRequestEvent,
-  deploy: Deploy
+  deployHandler: () => Promise<void>,
+  destroyHandler: () => Promise<void>
 ): Promise<void> {
   let hasLabel =
     payload.pull_request.labels.findIndex(l => l.name === 'preview') > -1
@@ -21,10 +21,10 @@ export async function handlePullRequest(
     payload.action === 'opened' ||
     payload.action === 'reopened'
   ) {
-    return await deploy.deployOrRollout()
+    await deployHandler()
   }
 
   if (payload.action === 'unlabeled' || payload.action === 'closed') {
-    return await deploy.destroy()
+    return await destroyHandler()
   }
 }
