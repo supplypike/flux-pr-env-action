@@ -13,7 +13,12 @@ jobs:
     steps:
       - name: Check for JIRA ISSUE
         id: check
-        uses: supplypike/jira-pr-link-action@v1
+        uses: supplypike/jira-pr-link-action@v2
         with:
-          ignore-author: dependabot[bot],supplypiker
-          project: '(SRENEW|SRENEW)'
+          ignore-author: |
+            dependabot[bot]
+            supplypiker
+          project: "(SRENEW|SRENEW)"
+          jira-host: ${{ secrets.JIRA_HOST }}
+          jira-email: ${{ secrets.JIRA_EMAIL }}
+          jira-api-token: ${{ secrets.JIRA_API_TOKEN }}
