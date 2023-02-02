@@ -45,7 +45,7 @@ jobs:
           echo "current-context:" $(kubectl config current-context)
           echo "environment-kubeconfig:" ${KUBECONFIG}
       - name: Install Flux binary
-        uses: supplypike/setup-bin@v2
+        uses: supplypike/setup-bin@v3
         with:
           uri: 'https://github.com/fluxcd/flux2/releases/download/v0.16.2/flux_0.16.2_linux_amd64.tar.gz'
           name: 'flux'
