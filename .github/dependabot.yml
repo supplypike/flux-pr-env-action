@@ -1,11 +1,23 @@
 version: 2
+registries:
+  npm-npmjs:
+    type: npm-registry
+    url: https://registry.npmjs.org
+    token: ${{ secrets.NPM_TOKEN }}
 updates:
-  - package-ecosystem: github-actions
-    directory: /
+  # Maintain dependencies for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
     schedule:
-      interval: daily
+      interval: "daily"
 
-  - package-ecosystem: npm
-    directory: /
+  # Maintain dependencies for npm
+  - package-ecosystem: "npm"
+    directory: "/"
+    registries:
+    - npm-npmjs
     schedule:
-      interval: daily
+      interval: "daily"
+    ignore:
+    - dependency-name: "*" # Only accept minor updates. Major and patch updates are dev initiated.
+      update-types: ["version-update:semver-major","version-update:semver-patch"]
