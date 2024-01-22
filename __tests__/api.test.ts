@@ -23,7 +23,7 @@ describe('#createNamespacedGitRepository', () => {
     const api = K8sApi()
     const scope = nock(NOCK_HOST)
       .post(
-        '/apis/source.toolkit.fluxcd.io/v1beta1/namespaces/NAMESPACE/gitrepositories'
+        '/apis/source.toolkit.fluxcd.io/v1/namespaces/NAMESPACE/gitrepositories'
       )
       .reply(200)
 
@@ -38,7 +38,7 @@ describe('#deleteNamespacedGitRepository', () => {
     const api = K8sApi()
     const scope = nock(NOCK_HOST)
       .delete(
-        '/apis/source.toolkit.fluxcd.io/v1beta1/namespaces/NAMESPACE/gitrepositories/NAME'
+        '/apis/source.toolkit.fluxcd.io/v1/namespaces/NAMESPACE/gitrepositories/NAME'
       )
       .reply(200)
 
@@ -53,7 +53,7 @@ describe('#createNamespacedKustomization', () => {
     const api = K8sApi()
     const scope = nock(NOCK_HOST)
       .post(
-        '/apis/kustomize.toolkit.fluxcd.io/v1beta1/namespaces/NAMESPACE/kustomizations'
+        '/apis/kustomize.toolkit.fluxcd.io/v1/namespaces/NAMESPACE/kustomizations'
       )
       .reply(200)
 
@@ -72,7 +72,7 @@ describe('#getNamespacedKustomization', () => {
     const api = K8sApi()
     const scope = nock(NOCK_HOST)
       .get(
-        '/apis/kustomize.toolkit.fluxcd.io/v1beta1/namespaces/NAMESPACE/kustomizations/NAME'
+        '/apis/kustomize.toolkit.fluxcd.io/v1/namespaces/NAMESPACE/kustomizations/NAME'
       )
       .reply(200)
 
@@ -87,7 +87,7 @@ describe('#deleteNamespacedKustomization', () => {
     const api = K8sApi()
     const scope = nock(NOCK_HOST)
       .delete(
-        '/apis/kustomize.toolkit.fluxcd.io/v1beta1/namespaces/NAMESPACE/kustomizations/NAME'
+        '/apis/kustomize.toolkit.fluxcd.io/v1/namespaces/NAMESPACE/kustomizations/NAME'
       )
       .reply(200)
 
@@ -109,7 +109,7 @@ describe('#patchNamespacedKustomization', () => {
     const api = K8sApi()
     const scope = nock(NOCK_HOST)
       .patch(
-        '/apis/kustomize.toolkit.fluxcd.io/v1beta1/namespaces/NAMESPACE/kustomizations/NAME',
+        '/apis/kustomize.toolkit.fluxcd.io/v1/namespaces/NAMESPACE/kustomizations/NAME',
         patch
       )
       .reply(200)
