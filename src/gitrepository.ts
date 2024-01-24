@@ -12,7 +12,7 @@ export interface GitRepositorySpec {
 }
 
 const GIT_SOURCE_API_GROUP = 'source.toolkit.fluxcd.io'
-const GIT_SOURCE_API_VERSION = 'v1beta1'
+const GIT_SOURCE_API_VERSION = 'v1'
 const GITREPO_PLURAL = 'gitrepositories'
 const GITREPO_KIND = 'GitRepository'
 

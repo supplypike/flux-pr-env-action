@@ -17,7 +17,7 @@ export interface KustomizationSpec {
 }
 
 const KUSTOMIZE_API_GROUP = 'kustomize.toolkit.fluxcd.io'
-const KUSTOMIZE_API_VERSION = 'v1beta1'
+const KUSTOMIZE_API_VERSION = 'v1'
 const KUSTOMIZATION_PLURAL = 'kustomizations'
 const KUSTOMIZATION_KIND = 'Kustomization'
 
