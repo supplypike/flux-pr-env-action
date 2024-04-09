@@ -1,7 +1,7 @@
 import {PullRequestEvent} from '@octokit/webhooks-types'
 
 // @see https://github.com/octokit/webhooks/blob/master/payload-examples/api.github.com/pull_request/opened.payload.json
-export default {
+export const pr: PullRequestEvent = {
   action: 'opened',
   number: 2,
   pull_request: {
@@ -47,8 +47,57 @@ export default {
     merged_at: null,
     merge_commit_sha: null,
     assignee: null,
-    assignees: [],
-    requested_reviewers: [],
+    assignees: [
+      {
+        login: 'Codertocat',
+        id: 21031067,
+        node_id: 'MDQ6VXNlcjIxMDMxMDY3',
+        avatar_url: 'https://avatars1.githubusercontent.com/u/21031067?v=4',
+        gravatar_id: '',
+        url: 'https://api.github.com/users/Codertocat',
+        html_url: 'https://github.com/Codertocat',
+        followers_url: 'https://api.github.com/users/Codertocat/followers',
+        following_url:
+          'https://api.github.com/users/Codertocat/following{/other_user}',
+        gists_url: 'https://api.github.com/users/Codertocat/gists{/gist_id}',
+        starred_url:
+          'https://api.github.com/users/Codertocat/starred{/owner}{/repo}',
+        subscriptions_url:
+          'https://api.github.com/users/Codertocat/subscriptions',
+        organizations_url: 'https://api.github.com/users/Codertocat/orgs',
+        repos_url: 'https://api.github.com/users/Codertocat/repos',
+        events_url: 'https://api.github.com/users/Codertocat/events{/privacy}',
+        received_events_url:
+          'https://api.github.com/users/Codertocat/received_events',
+        type: 'User',
+        site_admin: false
+      }
+    ],
+    requested_reviewers: [
+      {
+        login: 'octocat',
+        id: 5346,
+        node_id: 'MDQ6VXNlcjIxMDMxMDY3',
+        avatar_url: 'http://alambic.github.com/avatars/u/5346?',
+        gravatar_id: '',
+        url: 'https://api.github.com/users/octocat',
+        html_url: 'http://github.com/octocat',
+        followers_url: 'https://api.github.com/users/octocat/followers',
+        following_url:
+          'https://api.github.com/users/octocat/following{/other_user}',
+        gists_url: 'https://api.github.com/users/octocat/gists{/gist_id}',
+        starred_url:
+          'https://api.github.com/users/octocat/starred{/owner}{/repo}',
+        subscriptions_url: 'https://api.github.com/users/octocat/subscriptions',
+        organizations_url: 'https://api.github.com/users/octocat/orgs',
+        repos_url: 'https://api.github.com/users/octocat/repos',
+        events_url: 'https://api.github.com/users/octocat/events{/privacy}',
+        received_events_url:
+          'https://api.github.com/users/octocat/received_events',
+        type: 'User',
+        site_admin: false
+      }
+    ],
     requested_teams: [],
     labels: [
       {
@@ -74,7 +123,7 @@ export default {
       'https://api.github.com/repos/Codertocat/Hello-World/statuses/ec26c3e57ca3a959ca5aad62de7213c562f8c821',
     head: {
       label: 'Codertocat:changes',
-      ref: 'dependabot/npm_and_yarn/url-parse-1.5.10',
+      ref: 'dependabot-npm-and-yarn-url-parse-1-5-10',
       sha: 'ec26c3e57ca3a959ca5aad62de7213c562f8c821',
       user: {
         login: 'Codertocat',
@@ -233,12 +282,13 @@ export default {
         is_template: false,
         topics: [],
         visibility: 'public',
-        web_commit_signoff_required: false
+        web_commit_signoff_required: false,
+        custom_properties: {}
       }
     },
     base: {
       label: 'Codertocat:master',
-      ref: 'refs/head/master',
+      ref: 'master',
       sha: 'f95f852bd8fca8fcc58a9a2d6c842781e32a215e',
       user: {
         login: 'Codertocat',
@@ -397,7 +447,8 @@ export default {
         is_template: false,
         topics: [],
         visibility: 'public',
-        web_commit_signoff_required: false
+        web_commit_signoff_required: false,
+        custom_properties: {}
       }
     },
     _links: {
@@ -570,8 +621,9 @@ export default {
     default_branch: 'master',
     is_template: false,
     topics: [],
-    visibility: 'private',
-    web_commit_signoff_required: false
+    visibility: 'public',
+    web_commit_signoff_required: false,
+    custom_properties: {}
   },
   installation: {
     id: 1,
@@ -600,4 +652,5 @@ export default {
     type: 'User',
     site_admin: false
   }
-} as PullRequestEvent
+}
+export default pr

@@ -35,6 +35,9 @@ export function formatInputs(
   getBooleanInput = core.getBooleanInput
 ): FormattedInputs {
   const {repo, ref} = payload.pull_request.head
+  if (!repo) {
+    throw new Error('No repo found in payload')
+  }
   const branchKubeNameClean = slugurlref(ref)
   const {clone_url} = repo
   const repoName = slugurl(repo.name)
