@@ -123,7 +123,7 @@ export const pr: PullRequestEvent = {
       'https://api.github.com/repos/Codertocat/Hello-World/statuses/ec26c3e57ca3a959ca5aad62de7213c562f8c821',
     head: {
       label: 'Codertocat:changes',
-      ref: 'dependabot-npm-and-yarn-url-parse-1-5-10',
+      ref: 'dependabot/npm_and_yarn/url-parse-1.5.10',
       sha: 'ec26c3e57ca3a959ca5aad62de7213c562f8c821',
       user: {
         login: 'Codertocat',
@@ -288,7 +288,7 @@ export const pr: PullRequestEvent = {
     },
     base: {
       label: 'Codertocat:master',
-      ref: 'master',
+      ref: 'refs/head/master',
       sha: 'f95f852bd8fca8fcc58a9a2d6c842781e32a215e',
       user: {
         login: 'Codertocat',
