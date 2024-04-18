@@ -13,7 +13,7 @@ jobs:
     steps:
       - name: Check for JIRA ISSUE
         id: check
-        uses: supplypike/jira-pr-link-action@v2
+        uses: supplypike/jira-pr-link-action@v3
         with:
           ignore-author: |
             dependabot[bot]
