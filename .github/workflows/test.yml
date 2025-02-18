@@ -20,7 +20,7 @@ jobs:
           npm ci
       - run: |
           npm run all
-      - uses: sonarsource/sonarqube-scan-action@v4.2
+      - uses: sonarsource/sonarqube-scan-action@v5.0
         if: ${{ github.actor != 'dependabot[bot]' }}
         with:
           args: >
