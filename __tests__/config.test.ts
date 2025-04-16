@@ -1,42 +1,42 @@
-import { describe, expect, it, vi } from "vitest";
-import { formatInputs, getConfig } from "../src/config";
+import { describe, expect, it, vi } from 'vitest'
+import { formatInputs, getConfig } from '../src/config'
 import {
-	mockDeploy,
-	mockFormattedInputs,
-	mockUnformattedInputs,
-} from "./mocks/mocks";
-import mockPayload from "./mocks/pull_request_created";
+  mockDeploy,
+  mockFormattedInputs,
+  mockUnformattedInputs
+} from './mocks/mocks'
+import mockPayload from './mocks/pull_request_created'
 
-describe("#formatInputs", () => {
-	it("returns removes invalid name characters", () => {
-		const results = formatInputs(
-			mockPayload,
-			vi.fn(() => {
-				return "foo";
-			}),
-			vi.fn(() => {
-				return false;
-			}),
-		);
-		expect(results.branchKubeNameClean).toEqual(
-			"dependabot-npm-and-yarn-url-parse-1-5-10",
-		);
-	});
+describe('#formatInputs', () => {
+  it('returns removes invalid name characters', () => {
+    const results = formatInputs(
+      mockPayload,
+      vi.fn(() => {
+        return 'foo'
+      }),
+      vi.fn(() => {
+        return false
+      })
+    )
+    expect(results.branchKubeNameClean).toEqual(
+      'dependabot-npm-and-yarn-url-parse-1-5-10'
+    )
+  })
 
-	it("formats inputs", () => {
-		const actual = formatInputs(
-			mockPayload,
-			(key) => mockUnformattedInputs[key],
-			() => false,
-		);
+  it('formats inputs', () => {
+    const actual = formatInputs(
+      mockPayload,
+      (key) => mockUnformattedInputs[key],
+      () => false
+    )
 
-		expect(actual).toEqual(mockFormattedInputs);
-	});
-});
+    expect(actual).toEqual(mockFormattedInputs)
+  })
+})
 
-describe("#getConfig", () => {
-	it("returns a config object", () => {
-		const actual = getConfig(mockFormattedInputs);
-		expect(actual).toEqual(mockDeploy);
-	});
-});
+describe('#getConfig', () => {
+  it('returns a config object', () => {
+    const actual = getConfig(mockFormattedInputs)
+    expect(actual).toEqual(mockDeploy)
+  })
+})

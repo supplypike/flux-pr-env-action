@@ -3,7 +3,7 @@
  * https://raw.githubusercontent.com/rlespinasse/github-slug-action/2f05f8b5cbdfb8b37e68426a162be978e4e82550/src/slug.ts
  */
 
-const MAX_SLUG_STRING_SIZE = 63;
+const MAX_SLUG_STRING_SIZE = 63
 
 /**
  * slug_cs will take envVar and then :
@@ -13,10 +13,10 @@ const MAX_SLUG_STRING_SIZE = 63;
  * @param envVar to be slugged
  */
 export function slug_cs(envVar: string): string {
-	return trailHyphen(replaceAnyNonAlphanumericCharacter(envVar)).substring(
-		0,
-		MAX_SLUG_STRING_SIZE,
-	);
+  return trailHyphen(replaceAnyNonAlphanumericCharacter(envVar)).substring(
+    0,
+    MAX_SLUG_STRING_SIZE
+  )
 }
 
 /**
@@ -28,7 +28,7 @@ export function slug_cs(envVar: string): string {
  * @param envVar to be slugged
  */
 export function slug(envVar: string): string {
-	return slug_cs(envVar.toLowerCase());
+  return slug_cs(envVar.toLowerCase())
 }
 
 /**
@@ -40,7 +40,7 @@ export function slug(envVar: string): string {
  * @param envVar to be slugged
  */
 export function slugref_cs(envVar: string): string {
-	return slug_cs(removeRef(envVar));
+  return slug_cs(removeRef(envVar))
 }
 
 /**
@@ -53,7 +53,7 @@ export function slugref_cs(envVar: string): string {
  * @param envVar to be slugged
  */
 export function slugref(envVar: string): string {
-	return slugref_cs(envVar.toLowerCase());
+  return slugref_cs(envVar.toLowerCase())
 }
 
 /**
@@ -65,7 +65,7 @@ export function slugref(envVar: string): string {
  * @param envVar to be slugged
  */
 export function slugurl(envVar: string): string {
-	return slug(replaceAnyNonUrlCharactersWithHyphen(envVar));
+  return slug(replaceAnyNonUrlCharactersWithHyphen(envVar))
 }
 
 /**
@@ -78,21 +78,21 @@ export function slugurl(envVar: string): string {
  * @param envVar to be slugged
  */
 export function slugurlref(envVar: string): string {
-	return slugurl(slugref(envVar));
+  return slugurl(slugref(envVar))
 }
 
 function trailHyphen(envVar: string): string {
-	return envVar.replace(/^-*/g, "").replace(/-*$/g, "");
+  return envVar.replace(/^-*/g, '').replace(/-*$/g, '')
 }
 
 function replaceAnyNonAlphanumericCharacter(envVar: string): string {
-	return envVar.replace(/[^a-zA-Z0-9._]/g, "-");
+  return envVar.replace(/[^a-zA-Z0-9._]/g, '-')
 }
 
 function replaceAnyNonUrlCharactersWithHyphen(envVar: string): string {
-	return envVar.replace(/[._]/g, "-");
+  return envVar.replace(/[._]/g, '-')
 }
 
 export function removeRef(envVar: string): string {
-	return envVar.replace(/^refs\/(heads|tags|pull)\//, "");
+  return envVar.replace(/^refs\/(heads|tags|pull)\//, '')
 }
