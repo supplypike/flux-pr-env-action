@@ -47596,57 +47596,57 @@ function payload(name, namespace, { group, version, kind }, spec) {
         kind,
         metadata: {
             name,
-            namespace,
+            namespace
         },
-        spec,
+        spec
     };
 }
 const debug = (verb, customObject, obj) => core.debug(`${verb} ${customObject.kind}: ${JSON.stringify(obj, null, 2)}`);
 function K8sApi() {
     const kc = new k8s.KubeConfig();
     kc.loadFromDefault({
-        onInvalidEntry: config_types_1.ActionOnInvalid.THROW,
+        onInvalidEntry: config_types_1.ActionOnInvalid.THROW
     });
     const customApi = kc.makeApiClient(k8s.CustomObjectsApi);
     async function getNamespacedKustomization(name, namespace) {
-        debug("GET", kustomization_1.kustomization, name);
+        debug('GET', kustomization_1.kustomization, name);
         const res = await customApi.getNamespacedCustomObject(namespacedCustomObjectArgs(name, namespace, kustomization_1.kustomization));
         return res.body;
     }
     async function createNamespacedKustomization(name, namespace, spec) {
         const data = payload(name, namespace, kustomization_1.kustomization, spec);
-        debug("POST", kustomization_1.kustomization, data);
+        debug('POST', kustomization_1.kustomization, data);
         await customApi.createNamespacedCustomObject({
             ...namespacedCustomObjectArgs(name, namespace, kustomization_1.kustomization),
-            body: data,
+            body: data
         });
     }
     async function patchNamespacedKustomization(name, namespace, patch) {
-        const options = k8s.setHeaderOptions("Content-Type", k8s.PatchStrategy.JsonPatch);
-        debug("PATCH", kustomization_1.kustomization, patch);
+        const options = k8s.setHeaderOptions('Content-Type', k8s.PatchStrategy.JsonPatch);
+        debug('PATCH', kustomization_1.kustomization, patch);
         await customApi.patchNamespacedCustomObject({
             ...namespacedCustomObjectArgs(name, namespace, kustomization_1.kustomization),
-            body: patch,
+            body: patch
         }, options);
     }
     async function deleteNamespacedKustomization(name, namespace) {
-        debug("DELETE", kustomization_1.kustomization, name);
+        debug('DELETE', kustomization_1.kustomization, name);
         await customApi.deleteNamespacedCustomObject(namespacedCustomObjectArgs(name, namespace, kustomization_1.kustomization));
     }
     async function createNamespacedGitRepository(name, namespace, spec) {
         const data = payload(name, namespace, gitrepository_1.gitRepository, spec);
-        debug("POST", gitrepository_1.gitRepository, data);
+        debug('POST', gitrepository_1.gitRepository, data);
         await customApi.createNamespacedCustomObject({
             ...namespacedCustomObjectArgs(name, namespace, gitrepository_1.gitRepository),
-            body: data,
+            body: data
         });
     }
     async function deleteNamespacedGitRepository(name, namespace) {
-        debug("DELETE", gitrepository_1.gitRepository, name);
+        debug('DELETE', gitrepository_1.gitRepository, name);
         await customApi.deleteNamespacedCustomObject(namespacedCustomObjectArgs(name, namespace, gitrepository_1.gitRepository));
     }
     async function deleteNamespacedHelmRelease(name, namespace) {
-        debug("DELETE", helmrelease_1.helmRelease, name);
+        debug('DELETE', helmrelease_1.helmRelease, name);
         await customApi.deleteNamespacedCustomObject(namespacedCustomObjectArgs(name, namespace, helmrelease_1.helmRelease));
     }
     return {
@@ -47656,7 +47656,7 @@ function K8sApi() {
         deleteNamespacedKustomization,
         createNamespacedGitRepository,
         deleteNamespacedGitRepository,
-        deleteNamespacedHelmRelease,
+        deleteNamespacedHelmRelease
     };
 }
 
@@ -47706,18 +47706,18 @@ exports.formatInputs = formatInputs;
 exports.getConfig = getConfig;
 const core = __importStar(__nccwpck_require__(7484));
 const slug_1 = __nccwpck_require__(3684);
-const INPUT_PIPELINE_PATH = "pipelinePath";
-const INPUT_PIPELINE_REPO = "pipelineRepo";
-const INPUT_PIPELINE_BRANCH = "pipelineBranch";
-const INPUT_GIT_SECRET_NAME = "secretName";
-const INPUT_DEPLOY_IMAGE = "deployTag";
-const INPUT_NAMESPACE = "namespace";
-const INPUT_SERVICENAME = "serviceName";
-const INPUT_SKIP_CHECK = "skipCheck";
+const INPUT_PIPELINE_PATH = 'pipelinePath';
+const INPUT_PIPELINE_REPO = 'pipelineRepo';
+const INPUT_PIPELINE_BRANCH = 'pipelineBranch';
+const INPUT_GIT_SECRET_NAME = 'secretName';
+const INPUT_DEPLOY_IMAGE = 'deployTag';
+const INPUT_NAMESPACE = 'namespace';
+const INPUT_SERVICENAME = 'serviceName';
+const INPUT_SKIP_CHECK = 'skipCheck';
 function formatInputs(payload, getInput = core.getInput, getBooleanInput = core.getBooleanInput) {
     const { repo, ref } = payload.pull_request.head;
     if (!repo) {
-        throw new Error("No repo found in payload");
+        throw new Error('No repo found in payload');
     }
     const branchKubeNameClean = (0, slug_1.slugurlref)(ref);
     const { clone_url } = repo;
@@ -47725,7 +47725,7 @@ function formatInputs(payload, getInput = core.getInput, getBooleanInput = core.
     const gitSecret = getInput(INPUT_GIT_SECRET_NAME, { required: true });
     const pipelineRepo = getInput(INPUT_PIPELINE_REPO) || clone_url;
     const pipelinePath = getInput(INPUT_PIPELINE_PATH, { required: true });
-    const pipelineBranch = getInput(INPUT_PIPELINE_BRANCH) || "main";
+    const pipelineBranch = getInput(INPUT_PIPELINE_BRANCH) || 'main';
     const namespace = getInput(INPUT_NAMESPACE, { required: true });
     const deployTag = getInput(INPUT_DEPLOY_IMAGE, { required: true });
     const serviceName = getInput(INPUT_SERVICENAME) || repoName;
@@ -47740,7 +47740,7 @@ function formatInputs(payload, getInput = core.getInput, getBooleanInput = core.
         namespace,
         deployTag,
         skipCheck,
-        name,
+        name
     };
 }
 function getConfig(inputs) {
@@ -47751,10 +47751,10 @@ function getConfig(inputs) {
             path: inputs.pipelinePath,
             url: inputs.pipelineRepo,
             branch: inputs.pipelineBranch,
-            secretName: inputs.gitSecret,
+            secretName: inputs.gitSecret
         },
         imageTag: inputs.deployTag,
-        branch: inputs.branchKubeNameClean,
+        branch: inputs.branchKubeNameClean
     };
 }
 
@@ -47807,31 +47807,31 @@ function fluxDeploy(d, api = (0, api_1.K8sApi)()) {
     async function deploy() {
         core.info(`deploying preview "${d.namespace}/${d.name}" with tag "${d.imageTag}"`);
         const kustomization = {
-            interval: "1m0s",
+            interval: '1m0s',
             path: d.pipeline.path,
             prune: true,
             sourceRef: {
-                kind: "GitRepository",
-                name: d.name,
+                kind: 'GitRepository',
+                name: d.name
             },
             targetNamespace: d.namespace,
             postBuild: {
                 substitute: {
                     branch: d.branch,
-                    image_tag: d.imageTag,
-                },
-            },
+                    image_tag: d.imageTag
+                }
+            }
         };
         await api.createNamespacedKustomization(d.name, d.namespace, kustomization);
         const gitRepo = {
-            interval: "1m0s",
+            interval: '1m0s',
             ref: {
-                branch: d.pipeline.branch,
+                branch: d.pipeline.branch
             },
             url: d.pipeline.url,
             secretRef: {
-                name: d.pipeline.secretName,
-            },
+                name: d.pipeline.secretName
+            }
         };
         await api.createNamespacedGitRepository(d.name, d.namespace, gitRepo);
     }
@@ -47844,10 +47844,10 @@ function fluxDeploy(d, api = (0, api_1.K8sApi)()) {
         core.info(`rollout image ${d.imageTag}`);
         const patch = [
             {
-                op: "replace",
-                path: "/spec/postBuild/substitute/image_tag",
-                value: d.imageTag,
-            },
+                op: 'replace',
+                path: '/spec/postBuild/substitute/image_tag',
+                value: d.imageTag
+            }
         ];
         await api.patchNamespacedKustomization(d.name, d.namespace, patch);
     }
@@ -47863,17 +47863,17 @@ function fluxDeploy(d, api = (0, api_1.K8sApi)()) {
             // swallow error
         }
         if (found) {
-            core.info("found deploy");
+            core.info('found deploy');
             await rollout();
         }
         else {
-            core.info("creating deploy");
+            core.info('creating deploy');
             await deploy();
         }
     }
     return {
         destroy,
-        deployOrRollout,
+        deployOrRollout
     };
 }
 
@@ -47887,15 +47887,15 @@ function fluxDeploy(d, api = (0, api_1.K8sApi)()) {
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.gitRepository = void 0;
-const GIT_SOURCE_API_GROUP = "source.toolkit.fluxcd.io";
-const GIT_SOURCE_API_VERSION = "v1";
-const GITREPO_PLURAL = "gitrepositories";
-const GITREPO_KIND = "GitRepository";
+const GIT_SOURCE_API_GROUP = 'source.toolkit.fluxcd.io';
+const GIT_SOURCE_API_VERSION = 'v1';
+const GITREPO_PLURAL = 'gitrepositories';
+const GITREPO_KIND = 'GitRepository';
 exports.gitRepository = {
     group: GIT_SOURCE_API_GROUP,
     version: GIT_SOURCE_API_VERSION,
     kind: GITREPO_KIND,
-    plural: GITREPO_PLURAL,
+    plural: GITREPO_PLURAL
 };
 
 
@@ -47908,15 +47908,15 @@ exports.gitRepository = {
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.helmRelease = void 0;
-const HELM_RELEASE_API_GROUP = "helm.toolkit.fluxcd.io";
-const HELM_RELEASE_API_VERSION = "v2beta2";
-const HELM_RELEASE_PLURAL = "helmreleases";
-const HELM_RELEASE_KIND = "HelmRelease";
+const HELM_RELEASE_API_GROUP = 'helm.toolkit.fluxcd.io';
+const HELM_RELEASE_API_VERSION = 'v2beta2';
+const HELM_RELEASE_PLURAL = 'helmreleases';
+const HELM_RELEASE_KIND = 'HelmRelease';
 exports.helmRelease = {
     group: HELM_RELEASE_API_GROUP,
     version: HELM_RELEASE_API_VERSION,
     kind: HELM_RELEASE_KIND,
-    plural: HELM_RELEASE_PLURAL,
+    plural: HELM_RELEASE_PLURAL
 };
 
 
@@ -47929,15 +47929,15 @@ exports.helmRelease = {
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.kustomization = void 0;
-const KUSTOMIZE_API_GROUP = "kustomize.toolkit.fluxcd.io";
-const KUSTOMIZE_API_VERSION = "v1";
-const KUSTOMIZATION_PLURAL = "kustomizations";
-const KUSTOMIZATION_KIND = "Kustomization";
+const KUSTOMIZE_API_GROUP = 'kustomize.toolkit.fluxcd.io';
+const KUSTOMIZE_API_VERSION = 'v1';
+const KUSTOMIZATION_PLURAL = 'kustomizations';
+const KUSTOMIZATION_KIND = 'Kustomization';
 exports.kustomization = {
     group: KUSTOMIZE_API_GROUP,
     version: KUSTOMIZE_API_VERSION,
     plural: KUSTOMIZATION_PLURAL,
-    kind: KUSTOMIZATION_KIND,
+    kind: KUSTOMIZATION_KIND
 };
 
 
@@ -47987,7 +47987,7 @@ const github = __importStar(__nccwpck_require__(3228));
 const config_1 = __nccwpck_require__(2973);
 const deploy_1 = __nccwpck_require__(9880);
 const pullrequest_1 = __nccwpck_require__(39);
-const EVENT_PULL_REQUEST = "pull_request";
+const EVENT_PULL_REQUEST = 'pull_request';
 async function run() {
     try {
         if (github.context.eventName !== EVENT_PULL_REQUEST) {
@@ -48005,7 +48005,7 @@ async function run() {
         else {
             await (0, pullrequest_1.handlePullRequest)(payload, handleDeploy, handleDestroy);
         }
-        core.setOutput("deployName", name);
+        core.setOutput('deployName', name);
     }
     catch (error) {
         core.setFailed(error);
@@ -48024,20 +48024,20 @@ run();
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.handlePullRequest = handlePullRequest;
 async function handlePullRequest(payload, deployHandler, destroyHandler) {
-    let hasLabel = payload.pull_request.labels.findIndex((l) => l.name === "preview") > -1;
-    if (payload.action === "labeled" || payload.action === "unlabeled") {
-        hasLabel = payload.label.name === "preview";
+    let hasLabel = payload.pull_request.labels.findIndex((l) => l.name === 'preview') > -1;
+    if (payload.action === 'labeled' || payload.action === 'unlabeled') {
+        hasLabel = payload.label.name === 'preview';
     }
     if (!hasLabel) {
         return;
     }
-    if (payload.action === "labeled" ||
-        payload.action === "synchronize" ||
-        payload.action === "opened" ||
-        payload.action === "reopened") {
+    if (payload.action === 'labeled' ||
+        payload.action === 'synchronize' ||
+        payload.action === 'opened' ||
+        payload.action === 'reopened') {
         await deployHandler();
     }
-    if (payload.action === "unlabeled" || payload.action === "closed") {
+    if (payload.action === 'unlabeled' || payload.action === 'closed') {
         return await destroyHandler();
     }
 }
@@ -48131,16 +48131,16 @@ function slugurlref(envVar) {
     return slugurl(slugref(envVar));
 }
 function trailHyphen(envVar) {
-    return envVar.replace(/^-*/g, "").replace(/-*$/g, "");
+    return envVar.replace(/^-*/g, '').replace(/-*$/g, '');
 }
 function replaceAnyNonAlphanumericCharacter(envVar) {
-    return envVar.replace(/[^a-zA-Z0-9._]/g, "-");
+    return envVar.replace(/[^a-zA-Z0-9._]/g, '-');
 }
 function replaceAnyNonUrlCharactersWithHyphen(envVar) {
-    return envVar.replace(/[._]/g, "-");
+    return envVar.replace(/[._]/g, '-');
 }
 function removeRef(envVar) {
-    return envVar.replace(/^refs\/(heads|tags|pull)\//, "");
+    return envVar.replace(/^refs\/(heads|tags|pull)\//, '');
 }
 
 
