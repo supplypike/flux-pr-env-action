@@ -1,33 +1,33 @@
 if (require.main !== module) {
-  throw new Error('This file should not be required');
+	throw new Error("This file should not be required");
 }
 
-var childProcess = require('child_process');
-var fs = require('fs');
+const childProcess = require("node:child_process");
+const fs = require("node:fs");
 
-var paramFilePath = process.argv[2];
+const paramFilePath = process.argv[2];
 
-var serializedParams = fs.readFileSync(paramFilePath, 'utf8');
-var params = JSON.parse(serializedParams);
+const serializedParams = fs.readFileSync(paramFilePath, "utf8");
+const params = JSON.parse(serializedParams);
 
-var cmd = params.command;
-var execOptions = params.execOptions;
-var pipe = params.pipe;
-var stdoutFile = params.stdoutFile;
-var stderrFile = params.stderrFile;
+const cmd = params.command;
+const execOptions = params.execOptions;
+const pipe = params.pipe;
+const stdoutFile = params.stdoutFile;
+const stderrFile = params.stderrFile;
 
-var c = childProcess.exec(cmd, execOptions, function (err) {
-  if (!err) {
-    process.exitCode = 0;
-  } else if (err.code === undefined) {
-    process.exitCode = 1;
-  } else {
-    process.exitCode = err.code;
-  }
+const c = childProcess.exec(cmd, execOptions, (err) => {
+	if (!err) {
+		process.exitCode = 0;
+	} else if (err.code === undefined) {
+		process.exitCode = 1;
+	} else {
+		process.exitCode = err.code;
+	}
 });
 
-var stdoutStream = fs.createWriteStream(stdoutFile);
-var stderrStream = fs.createWriteStream(stderrFile);
+const stdoutStream = fs.createWriteStream(stdoutFile);
+const stderrStream = fs.createWriteStream(stderrFile);
 
 c.stdout.pipe(stdoutStream);
 c.stderr.pipe(stderrStream);
@@ -35,5 +35,5 @@ c.stdout.pipe(process.stdout);
 c.stderr.pipe(process.stderr);
 
 if (pipe) {
-  c.stdin.end(pipe);
+	c.stdin.end(pipe);
 }

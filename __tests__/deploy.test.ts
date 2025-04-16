@@ -1,94 +1,99 @@
-import {describe, expect, it, jest, beforeEach} from '@jest/globals'
-import {fluxDeploy} from '../src/deploy'
-import {mockDeploy, mockGitRepo, mockKustomization} from './mocks/mocks'
+import { type Mocked, beforeEach, describe, expect, it, vi } from "vitest";
+import type { Api } from "../src/api";
+import { fluxDeploy } from "../src/deploy";
+import { mockDeploy, mockGitRepo, mockKustomization } from "./mocks/mocks";
 
-jest.mock('@actions/core')
+vi.mock("@actions/core");
 
-const mockName = 'hello-world-dependabot-npm-and-yarn-url-parse-1-5-10'
+const mockName = "hello-world-dependabot-npm-and-yarn-url-parse-1-5-10";
 
-describe('#destroy', () => {
-  let api: any
+const mockedApi = () => ({
+	deleteNamespacedKustomization: vi.fn(),
+	deleteNamespacedGitRepository: vi.fn(),
+	deleteNamespacedHelmRelease: vi.fn(),
+	getNamespacedKustomization: vi.fn(),
+	createNamespacedKustomization: vi.fn(),
+	patchNamespacedKustomization: vi.fn(),
+	createNamespacedGitRepository: vi.fn(),
+});
 
-  beforeEach(async () => {
-    api = {
-      deleteNamespacedKustomization: jest.fn(),
-      deleteNamespacedGitRepository: jest.fn(),
-      deleteNamespacedHelmRelease: jest.fn()
-    }
-    const d = fluxDeploy(mockDeploy, api)
-    await d.destroy()
-  })
+describe("#destroy", () => {
+	let api: Mocked<Api>;
 
-  it('should delete a GitRepository', () => {
-    expect(api.deleteNamespacedGitRepository).toHaveBeenCalledWith(
-      mockName,
-      'mock-ns'
-    )
-  })
+	beforeEach(async () => {
+		api = mockedApi();
+		const d = fluxDeploy(mockDeploy, api);
+		await d.destroy();
+	});
 
-  it('should delete a Kustomization', () => {
-    expect(api.deleteNamespacedKustomization).toHaveBeenCalledWith(
-      mockName,
-      'mock-ns'
-    )
-  })
+	it("should delete a GitRepository", () => {
+		expect(api.deleteNamespacedGitRepository).toHaveBeenCalledWith(
+			mockName,
+			"mock-ns",
+		);
+	});
 
-  it('should delete a HelmRelease', () => {
-    expect(api.deleteNamespacedHelmRelease).toHaveBeenCalledWith(
-      mockName,
-      'mock-ns'
-    )
-  })
-})
+	it("should delete a Kustomization", () => {
+		expect(api.deleteNamespacedKustomization).toHaveBeenCalledWith(
+			mockName,
+			"mock-ns",
+		);
+	});
 
-describe('#rolloutOrDeploy', () => {
-  it('should patch a Kustomization when one exists', async () => {
-    const api: any = {
-      getNamespacedKustomization: jest
-        .fn()
-        .mockImplementation(async () => Promise.resolve(mockKustomization)),
-      patchNamespacedKustomization: jest.fn()
-    }
-    const d = fluxDeploy(mockDeploy, api)
-    await d.deployOrRollout()
+	it("should delete a HelmRelease", () => {
+		expect(api.deleteNamespacedHelmRelease).toHaveBeenCalledWith(
+			mockName,
+			"mock-ns",
+		);
+	});
+});
 
-    const patch = [
-      {
-        op: 'replace',
-        path: '/spec/postBuild/substitute/image_tag',
-        value: 'latest'
-      }
-    ]
-    expect(api.getNamespacedKustomization).toHaveBeenCalledWith(
-      mockName,
-      'mock-ns'
-    )
-    expect(api.patchNamespacedKustomization).toHaveBeenCalledWith(
-      mockName,
-      'mock-ns',
-      patch
-    )
-  })
+describe("#rolloutOrDeploy", () => {
+	let api: Mocked<Api>;
 
-  it('should create a Kustomization if it does not exist', async () => {
-    const api: any = {
-      getNamespacedKustomization: jest.fn(),
-      createNamespacedKustomization: jest.fn(),
-      createNamespacedGitRepository: jest.fn()
-    }
-    const d = fluxDeploy(mockDeploy, api)
-    await d.deployOrRollout()
+	it("should patch a Kustomization when one exists", async () => {
+		api = {
+			...mockedApi(),
+			getNamespacedKustomization: vi
+				.fn()
+				.mockImplementation(async () => Promise.resolve(mockKustomization)),
+		};
+		const d = fluxDeploy(mockDeploy, api);
+		await d.deployOrRollout();
 
-    expect(api.createNamespacedKustomization).toHaveBeenCalledWith(
-      mockName,
-      'mock-ns',
-      mockKustomization
-    )
+		const patch = [
+			{
+				op: "replace",
+				path: "/spec/postBuild/substitute/image_tag",
+				value: "latest",
+			},
+		];
+		expect(api.getNamespacedKustomization).toHaveBeenCalledWith(
+			mockName,
+			"mock-ns",
+		);
+		expect(api.patchNamespacedKustomization).toHaveBeenCalledWith(
+			mockName,
+			"mock-ns",
+			patch,
+		);
+	});
 
-    expect(api.createNamespacedGitRepository).toHaveBeenCalledWith(
-      mockName,
-      'mock-ns',
-      mockGitRepo
-    )
-  })
-})
+	it("should create a Kustomization if it does not exist", async () => {
+		api = mockedApi();
+		const d = fluxDeploy(mockDeploy, api);
+		await d.deployOrRollout();
+
+		expect(api.createNamespacedKustomization).toHaveBeenCalledWith(
+			mockName,
+			"mock-ns",
+			mockKustomization,
+		);
+
+		expect(api.createNamespacedGitRepository).toHaveBeenCalledWith(
+			mockName,
+			"mock-ns",
+			mockGitRepo,
+		);
+	});
+});

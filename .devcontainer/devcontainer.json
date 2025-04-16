@@ -8,14 +8,13 @@
 		// Update 'VARIANT' to pick a Node version: 16, 14, 12.
 		// Append -bullseye or -buster to pin to an OS version.
 		// Use -bullseye variants on local on arm64/Apple Silicon.
-		"args": { 
+		"args": {
 			"VARIANT": "16-bullseye"
 		}
 	},
 
 	// Set *default* container specific settings.json values on container create.
 	"settings": {},
-
 
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
