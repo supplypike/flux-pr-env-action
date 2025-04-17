@@ -1,7 +1,7 @@
-import {FluxDeployConfig} from '../../src/deploy'
-import {GitRepositorySpec} from '../../src/gitrepository'
-import {KustomizationSpec} from '../../src/kustomization'
-import {FormattedInputs} from '../config'
+import type { FormattedInputs } from '../../src/config'
+import type { FluxDeployConfig } from '../../src/deploy'
+import type { GitRepositorySpec } from '../../src/gitrepository'
+import type { KustomizationSpec } from '../../src/kustomization'
 
 const mockGitUrl = 'https://github.com/Codertocat/Hello-World.git'
 

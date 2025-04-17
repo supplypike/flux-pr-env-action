@@ -1,14 +1,17 @@
-import {describe, expect, it, beforeEach, afterEach, jest} from '@jest/globals'
+import path from 'node:path'
 import nock from 'nock'
-import path from 'path'
-import {K8sApi} from '../src/api'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { K8sApi } from '../src/api'
 
-import {mockGitRepo, mockKustomization} from './mocks/mocks'
+import { mockGitRepo, mockKustomization } from './mocks/mocks'
 
 process.env.KUBECONFIG = path.resolve(__dirname, 'mocks/kubeconfig.yml')
+// Match the host in the kubeconfig file
 const NOCK_HOST = 'http://localhost:8080'
+// The k8s client expects some data to be returned for serialization but we don't care
+const MOCK_RES_DATA = { foo: 'bar' }
 
-jest.mock('@actions/core')
+vi.mock('@actions/core')
 
 beforeEach(() => {
   nock.disableNetConnect()
@@ -25,11 +28,11 @@ describe('#createNamespacedGitRepository', () => {
       .post(
         '/apis/source.toolkit.fluxcd.io/v1/namespaces/NAMESPACE/gitrepositories'
       )
-      .reply(200)
+      .reply(200, MOCK_RES_DATA)
 
     await api.createNamespacedGitRepository('NAME', 'NAMESPACE', mockGitRepo)
 
-    expect(scope.done())
+    expect(scope.isDone())
   })
 })
 
@@ -40,7 +43,7 @@ describe('#deleteNamespacedGitRepository', () => {
       .delete(
         '/apis/source.toolkit.fluxcd.io/v1/namespaces/NAMESPACE/gitrepositories/NAME'
       )
-      .reply(200)
+      .reply(200, MOCK_RES_DATA)
 
     await api.deleteNamespacedGitRepository('NAME', 'NAMESPACE')
 
@@ -55,7 +58,7 @@ describe('#createNamespacedKustomization', () => {
       .post(
         '/apis/kustomize.toolkit.fluxcd.io/v1/namespaces/NAMESPACE/kustomizations'
       )
-      .reply(200)
+      .reply(200, MOCK_RES_DATA)
 
     await api.createNamespacedKustomization(
       'NAME',
@@ -74,7 +77,7 @@ describe('#getNamespacedKustomization', () => {
       .get(
         '/apis/kustomize.toolkit.fluxcd.io/v1/namespaces/NAMESPACE/kustomizations/NAME'
       )
-      .reply(200)
+      .reply(200, MOCK_RES_DATA)
 
     await api.getNamespacedKustomization('NAME', 'NAMESPACE')
 
@@ -89,7 +92,7 @@ describe('#deleteNamespacedKustomization', () => {
       .delete(
         '/apis/kustomize.toolkit.fluxcd.io/v1/namespaces/NAMESPACE/kustomizations/NAME'
       )
-      .reply(200)
+      .reply(200, MOCK_RES_DATA)
 
     await api.deleteNamespacedKustomization('NAME', 'NAMESPACE')
 
@@ -112,7 +115,7 @@ describe('#patchNamespacedKustomization', () => {
         '/apis/kustomize.toolkit.fluxcd.io/v1/namespaces/NAMESPACE/kustomizations/NAME',
         patch
       )
-      .reply(200)
+      .reply(200, MOCK_RES_DATA)
 
     await api.patchNamespacedKustomization('NAME', 'NAMESPACE', patch)
 

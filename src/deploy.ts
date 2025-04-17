@@ -1,8 +1,8 @@
 import * as core from '@actions/core'
 
-import {K8sApi} from './api'
-import {GitRepositorySpec} from './gitrepository'
-import {KustomizationSpec} from './kustomization'
+import { K8sApi } from './api'
+import type { GitRepositorySpec } from './gitrepository'
+import type { KustomizationSpec } from './kustomization'
 
 export interface FluxDeployConfig {
   // name of the resulting Kustomization

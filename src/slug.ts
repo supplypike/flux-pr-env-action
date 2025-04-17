@@ -82,17 +82,17 @@ export function slugurlref(envVar: string): string {
 }
 
 function trailHyphen(envVar: string): string {
-  return envVar.replace(RegExp('^-*', 'g'), '').replace(RegExp('-*$', 'g'), '')
+  return envVar.replace(/^-*/g, '').replace(/-*$/g, '')
 }
 
 function replaceAnyNonAlphanumericCharacter(envVar: string): string {
-  return envVar.replace(RegExp('[^a-zA-Z0-9._]', 'g'), '-')
+  return envVar.replace(/[^a-zA-Z0-9._]/g, '-')
 }
 
 function replaceAnyNonUrlCharactersWithHyphen(envVar: string): string {
-  return envVar.replace(RegExp('[._]', 'g'), '-')
+  return envVar.replace(/[._]/g, '-')
 }
 
 export function removeRef(envVar: string): string {
-  return envVar.replace(RegExp('^refs/(heads|tags|pull)/'), '')
+  return envVar.replace(/^refs\/(heads|tags|pull)\//, '')
 }

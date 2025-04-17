@@ -1,21 +1,21 @@
-import {describe, expect, it, jest, beforeEach} from '@jest/globals'
-import {
+import type {
   PullRequestEvent,
   PullRequestLabeledEvent
 } from '@octokit/webhooks-types'
-import {handlePullRequest} from '../src/pullrequest'
-import {mockLabel, mockPreviewLabel} from './mocks/mocks'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { handlePullRequest } from '../src/pullrequest'
+import { mockLabel, mockPreviewLabel } from './mocks/mocks'
 import pull_request_created from './mocks/pull_request_created'
 
-jest.mock('@actions/core')
+vi.mock('@actions/core')
 
-let destroy = jest.fn(async () => Promise.resolve())
-let deploy = jest.fn(async () => Promise.resolve())
+let destroy = vi.fn(async () => Promise.resolve())
+let deploy = vi.fn(async () => Promise.resolve())
 let payload: PullRequestEvent
 
 beforeEach(() => {
-  destroy = jest.fn(async () => Promise.resolve())
-  deploy = jest.fn(async () => Promise.resolve())
+  destroy = vi.fn(async () => Promise.resolve())
+  deploy = vi.fn(async () => Promise.resolve())
   payload = JSON.parse(JSON.stringify(pull_request_created))
 })
 

@@ -1,4 +1,5 @@
-import {formatInputs, getConfig} from '../src/config'
+import { describe, expect, it, vi } from 'vitest'
+import { formatInputs, getConfig } from '../src/config'
 import {
   mockDeploy,
   mockFormattedInputs,
@@ -10,10 +11,10 @@ describe('#formatInputs', () => {
   it('returns removes invalid name characters', () => {
     const results = formatInputs(
       mockPayload,
-      jest.fn(() => {
+      vi.fn(() => {
         return 'foo'
       }),
-      jest.fn(() => {
+      vi.fn(() => {
         return false
       })
     )
@@ -25,7 +26,7 @@ describe('#formatInputs', () => {
   it('formats inputs', () => {
     const actual = formatInputs(
       mockPayload,
-      key => mockUnformattedInputs[key],
+      (key) => mockUnformattedInputs[key],
       () => false
     )
 

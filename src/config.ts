@@ -1,8 +1,8 @@
 import * as core from '@actions/core'
-import {PullRequestEvent} from '@octokit/webhooks-types'
+import type { PullRequestEvent } from '@octokit/webhooks-types'
 
-import {FluxDeployConfig} from './deploy'
-import {slugurl, slugurlref} from './slug'
+import type { FluxDeployConfig } from './deploy'
+import { slugurl, slugurlref } from './slug'
 
 const INPUT_PIPELINE_PATH = 'pipelinePath'
 const INPUT_PIPELINE_REPO = 'pipelineRepo'
@@ -30,20 +30,20 @@ export function formatInputs(
   getInput = core.getInput,
   getBooleanInput = core.getBooleanInput
 ): FormattedInputs {
-  const {repo, ref} = payload.pull_request.head
+  const { repo, ref } = payload.pull_request.head
   if (!repo) {
     throw new Error('No repo found in payload')
   }
   const branchKubeNameClean = slugurlref(ref)
-  const {clone_url} = repo
+  const { clone_url } = repo
   const repoName = slugurl(repo.name)
 
-  const gitSecret = getInput(INPUT_GIT_SECRET_NAME, {required: true})
+  const gitSecret = getInput(INPUT_GIT_SECRET_NAME, { required: true })
   const pipelineRepo = getInput(INPUT_PIPELINE_REPO) || clone_url
-  const pipelinePath = getInput(INPUT_PIPELINE_PATH, {required: true})
+  const pipelinePath = getInput(INPUT_PIPELINE_PATH, { required: true })
   const pipelineBranch = getInput(INPUT_PIPELINE_BRANCH) || 'main'
-  const namespace = getInput(INPUT_NAMESPACE, {required: true})
-  const deployTag = getInput(INPUT_DEPLOY_IMAGE, {required: true})
+  const namespace = getInput(INPUT_NAMESPACE, { required: true })
+  const deployTag = getInput(INPUT_DEPLOY_IMAGE, { required: true })
   const serviceName = getInput(INPUT_SERVICENAME) || repoName
   const skipCheck = getBooleanInput(INPUT_SKIP_CHECK)
   const name = slugurlref(`${serviceName}-${branchKubeNameClean}`)

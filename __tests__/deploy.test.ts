@@ -1,20 +1,27 @@
-import {describe, expect, it, jest, beforeEach} from '@jest/globals'
-import {fluxDeploy} from '../src/deploy'
-import {mockDeploy, mockGitRepo, mockKustomization} from './mocks/mocks'
+import { type Mocked, beforeEach, describe, expect, it, vi } from 'vitest'
+import type { Api } from '../src/api'
+import { fluxDeploy } from '../src/deploy'
+import { mockDeploy, mockGitRepo, mockKustomization } from './mocks/mocks'
 
-jest.mock('@actions/core')
+vi.mock('@actions/core')
 
 const mockName = 'hello-world-dependabot-npm-and-yarn-url-parse-1-5-10'
 
+const mockedApi = () => ({
+  deleteNamespacedKustomization: vi.fn(),
+  deleteNamespacedGitRepository: vi.fn(),
+  deleteNamespacedHelmRelease: vi.fn(),
+  getNamespacedKustomization: vi.fn(),
+  createNamespacedKustomization: vi.fn(),
+  patchNamespacedKustomization: vi.fn(),
+  createNamespacedGitRepository: vi.fn()
+})
+
 describe('#destroy', () => {
-  let api: any
+  let api: Mocked<Api>
 
   beforeEach(async () => {
-    api = {
-      deleteNamespacedKustomization: jest.fn(),
-      deleteNamespacedGitRepository: jest.fn(),
-      deleteNamespacedHelmRelease: jest.fn()
-    }
+    api = mockedApi()
     const d = fluxDeploy(mockDeploy, api)
     await d.destroy()
   })
@@ -42,12 +49,14 @@ describe('#destroy', () => {
 })
 
 describe('#rolloutOrDeploy', () => {
+  let api: Mocked<Api>
+
   it('should patch a Kustomization when one exists', async () => {
-    const api: any = {
-      getNamespacedKustomization: jest
+    api = {
+      ...mockedApi(),
+      getNamespacedKustomization: vi
         .fn()
-        .mockImplementation(async () => Promise.resolve(mockKustomization)),
-      patchNamespacedKustomization: jest.fn()
+        .mockImplementation(async () => Promise.resolve(mockKustomization))
     }
     const d = fluxDeploy(mockDeploy, api)
     await d.deployOrRollout()
@@ -71,11 +80,7 @@ describe('#rolloutOrDeploy', () => {
   })
 
   it('should create a Kustomization if it does not exist', async () => {
-    const api: any = {
-      getNamespacedKustomization: jest.fn(),
-      createNamespacedKustomization: jest.fn(),
-      createNamespacedGitRepository: jest.fn()
-    }
+    api = mockedApi()
     const d = fluxDeploy(mockDeploy, api)
     await d.deployOrRollout()
 

@@ -1,4 +1,4 @@
-import {CustomObjectDefinition} from './api'
+import type { CustomObjectDefinition } from './api'
 
 export interface GitRepositorySpec {
   interval?: string

@@ -1,4 +1,4 @@
-import {PullRequestEvent} from '@octokit/webhooks-types'
+import type { PullRequestEvent } from '@octokit/webhooks-types'
 
 export async function handlePullRequest(
   payload: PullRequestEvent,
@@ -6,7 +6,7 @@ export async function handlePullRequest(
   destroyHandler: () => Promise<void>
 ): Promise<void> {
   let hasLabel =
-    payload.pull_request.labels.findIndex(l => l.name === 'preview') > -1
+    payload.pull_request.labels.findIndex((l) => l.name === 'preview') > -1
   if (payload.action === 'labeled' || payload.action === 'unlabeled') {
     hasLabel = payload.label.name === 'preview'
   }

@@ -1,4 +1,4 @@
-import {PullRequestEvent} from '@octokit/webhooks-types'
+import type { PullRequestEvent } from '@octokit/webhooks-types'
 
 // @see https://github.com/octokit/webhooks/blob/master/payload-examples/api.github.com/pull_request/opened.payload.json
 export const pr: PullRequestEvent = {
@@ -455,7 +455,7 @@ export const pr: PullRequestEvent = {
       self: {
         href: 'https://api.github.com/repos/Codertocat/Hello-World/pulls/2'
       },
-      html: {href: 'https://github.com/Codertocat/Hello-World/pull/2'},
+      html: { href: 'https://github.com/Codertocat/Hello-World/pull/2' },
       issue: {
         href: 'https://api.github.com/repos/Codertocat/Hello-World/issues/2'
       },
