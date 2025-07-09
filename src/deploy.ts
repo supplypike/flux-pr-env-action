@@ -98,7 +98,7 @@ export function fluxDeploy(d: FluxDeployConfig, api = K8sApi()): Deploy {
         found = true
       }
     } catch (ex) {
-      // swallow error
+      core.error(`failed to get existing deploy: ${ex}`)
     }
 
     if (found) {
