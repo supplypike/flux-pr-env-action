@@ -79,7 +79,8 @@ describe('#getNamespacedKustomization', () => {
       )
       .reply(200, MOCK_RES_DATA)
 
-    await api.getNamespacedKustomization('NAME', 'NAMESPACE')
+    const actual = await api.getNamespacedKustomization('NAME', 'NAMESPACE')
+    expect(actual).toEqual(MOCK_RES_DATA)
 
     expect(scope.done())
   })

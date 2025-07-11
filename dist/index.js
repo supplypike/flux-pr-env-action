@@ -47610,8 +47610,7 @@ function K8sApi() {
     const customApi = kc.makeApiClient(k8s.CustomObjectsApi);
     async function getNamespacedKustomization(name, namespace) {
         debug('GET', kustomization_1.kustomization, name);
-        const res = await customApi.getNamespacedCustomObject(namespacedCustomObjectArgs(name, namespace, kustomization_1.kustomization));
-        return res.body;
+        return await customApi.getNamespacedCustomObject(namespacedCustomObjectArgs(name, namespace, kustomization_1.kustomization));
     }
     async function createNamespacedKustomization(name, namespace, spec) {
         const data = payload(name, namespace, kustomization_1.kustomization, spec);
