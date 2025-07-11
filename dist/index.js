@@ -47610,7 +47610,10 @@ function K8sApi() {
     const customApi = kc.makeApiClient(k8s.CustomObjectsApi);
     async function getNamespacedKustomization(name, namespace) {
         debug('GET', kustomization_1.kustomization, name);
-        const res = await customApi.getNamespacedCustomObject(namespacedCustomObjectArgs(name, namespace, kustomization_1.kustomization));
+        const args = namespacedCustomObjectArgs(name, namespace, kustomization_1.kustomization);
+        core.debug(`args: ${JSON.stringify(args, null, 2)}`);
+        const res = await customApi.getNamespacedCustomObject(args);
+        core.debug(`res: ${JSON.stringify(res, null, 2)}`);
         return res.body;
     }
     async function createNamespacedKustomization(name, namespace, spec) {
@@ -47860,7 +47863,7 @@ function fluxDeploy(d, api = (0, api_1.K8sApi)()) {
             }
         }
         catch (ex) {
-            // swallow error
+            core.error(`failed to get existing deploy: ${ex}`);
         }
         if (found) {
             core.info('found deploy');
