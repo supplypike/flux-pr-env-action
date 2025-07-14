@@ -125,11 +125,9 @@ export function K8sApi(): Api {
     namespace: string
   ): Promise<CustomObject<KustomizationSpec>> {
     debug('GET', kustomization, name)
-    const res = await customApi.getNamespacedCustomObject(
+    return await customApi.getNamespacedCustomObject(
       namespacedCustomObjectArgs(name, namespace, kustomization)
     )
-
-    return res.body as CustomObject<KustomizationSpec>
   }
 
   async function createNamespacedKustomization(
