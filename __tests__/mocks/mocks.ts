@@ -12,7 +12,8 @@ export const mockDeploy: FluxDeployConfig = {
     path: './kustomization/testing-preview',
     secretName: 'secret',
     url: mockGitUrl,
-    branch: 'main'
+    branch: 'main',
+    provider: 'github'
   },
   branch: 'dependabot-npm-and-yarn-url-parse-1-5-10',
   imageTag: 'latest'
@@ -43,6 +44,7 @@ export const mockGitRepo: GitRepositorySpec = {
   secretRef: {
     name: 'secret'
   },
+  provider: 'github',
   interval: '1m0s'
 }
 
@@ -82,5 +84,6 @@ export const mockFormattedInputs: FormattedInputs = {
   namespace: 'mock-ns',
   skipCheck: false,
   name: 'hello-world-dependabot-npm-and-yarn-url-parse-1-5-10',
-  deployTag: 'latest'
+  deployTag: 'latest',
+  gitProvider: 'github'
 }

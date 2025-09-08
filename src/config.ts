@@ -74,7 +74,7 @@ export function getConfig(inputs: FormattedInputs): FluxDeployConfig {
       url: inputs.pipelineRepo,
       branch: inputs.pipelineBranch,
       secretName: inputs.gitSecret,
-      provider: inputs.gitProvider,
+      provider: inputs.gitProvider
     },
     imageTag: inputs.deployTag,
     branch: inputs.branchKubeNameClean
