@@ -47771,6 +47771,7 @@ const INPUT_DEPLOY_IMAGE = 'deployTag';
 const INPUT_NAMESPACE = 'namespace';
 const INPUT_SERVICENAME = 'serviceName';
 const INPUT_SKIP_CHECK = 'skipCheck';
+const INPUT_GIT_PROVIDER = 'gitProvider';
 function formatInputs(payload, getInput = core.getInput, getBooleanInput = core.getBooleanInput) {
     const { repo, ref } = payload.pull_request.head;
     if (!repo) {
@@ -47788,6 +47789,7 @@ function formatInputs(payload, getInput = core.getInput, getBooleanInput = core.
     const serviceName = getInput(INPUT_SERVICENAME) || repoName;
     const skipCheck = getBooleanInput(INPUT_SKIP_CHECK);
     const name = (0, slug_1.slugurlref)(`${serviceName}-${branchKubeNameClean}`);
+    const gitProvider = getInput(INPUT_GIT_PROVIDER) || 'github';
     return {
         branchKubeNameClean,
         gitSecret,
@@ -47797,7 +47799,8 @@ function formatInputs(payload, getInput = core.getInput, getBooleanInput = core.
         namespace,
         deployTag,
         skipCheck,
-        name
+        name,
+        gitProvider
     };
 }
 function getConfig(inputs) {
@@ -47808,7 +47811,8 @@ function getConfig(inputs) {
             path: inputs.pipelinePath,
             url: inputs.pipelineRepo,
             branch: inputs.pipelineBranch,
-            secretName: inputs.gitSecret
+            secretName: inputs.gitSecret,
+            provider: inputs.gitProvider
         },
         imageTag: inputs.deployTag,
         branch: inputs.branchKubeNameClean
@@ -47888,7 +47892,8 @@ function fluxDeploy(d, api = (0, api_1.K8sApi)()) {
             url: d.pipeline.url,
             secretRef: {
                 name: d.pipeline.secretName
-            }
+            },
+            provider: d.pipeline.provider
         };
         await api.createNamespacedGitRepository(d.name, d.namespace, gitRepo);
     }
