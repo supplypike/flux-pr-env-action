@@ -35,6 +35,10 @@ inputs:
     required: true
     description: skips checking PR event and just deploy
     default: 'false'
+  gitProvider:
+    required: false
+    description: gitrepository provider
+    default: github
 outputs:
   deployName:
     description: name of deployed kustomization

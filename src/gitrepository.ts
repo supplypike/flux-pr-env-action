@@ -6,6 +6,7 @@ export interface GitRepositorySpec {
     branch: string
   }
   url: string
+  provider: string
   secretRef: {
     name: string
   }

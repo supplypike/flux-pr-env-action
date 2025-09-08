@@ -19,6 +19,7 @@ export interface FluxDeployConfig {
     path: string
     // branch to use as base for Kustomization files, default is 'main'
     branch: string
+    provider: string
   }
   // container tag to use replacing `${image_tag}` in Kustomization
   imageTag: string
@@ -66,7 +67,8 @@ export function fluxDeploy(d: FluxDeployConfig, api = K8sApi()): Deploy {
       url: d.pipeline.url,
       secretRef: {
         name: d.pipeline.secretName
-      }
+      },
+      provider: d.pipeline.provider
     }
     await api.createNamespacedGitRepository(d.name, d.namespace, gitRepo)
   }

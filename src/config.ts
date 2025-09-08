@@ -12,6 +12,7 @@ const INPUT_DEPLOY_IMAGE = 'deployTag'
 const INPUT_NAMESPACE = 'namespace'
 const INPUT_SERVICENAME = 'serviceName'
 const INPUT_SKIP_CHECK = 'skipCheck'
+const INPUT_GIT_PROVIDER = 'gitProvider'
 
 export interface FormattedInputs {
   branchKubeNameClean: string
@@ -23,6 +24,7 @@ export interface FormattedInputs {
   deployTag: string
   skipCheck: boolean
   name: string
+  gitProvider: string
 }
 
 export function formatInputs(
@@ -47,6 +49,7 @@ export function formatInputs(
   const serviceName = getInput(INPUT_SERVICENAME) || repoName
   const skipCheck = getBooleanInput(INPUT_SKIP_CHECK)
   const name = slugurlref(`${serviceName}-${branchKubeNameClean}`)
+  const gitProvider = getInput(INPUT_GIT_PROVIDER) || 'github'
 
   return {
     branchKubeNameClean,
@@ -57,7 +60,8 @@ export function formatInputs(
     namespace,
     deployTag,
     skipCheck,
-    name
+    name,
+    gitProvider
   }
 }
 
@@ -69,7 +73,8 @@ export function getConfig(inputs: FormattedInputs): FluxDeployConfig {
       path: inputs.pipelinePath,
       url: inputs.pipelineRepo,
       branch: inputs.pipelineBranch,
-      secretName: inputs.gitSecret
+      secretName: inputs.gitSecret,
+      provider: inputs.gitProvider,
     },
     imageTag: inputs.deployTag,
     branch: inputs.branchKubeNameClean
