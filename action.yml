@@ -20,7 +20,7 @@ inputs:
     description: |
       name of github secret in cluster to reference for deploys
       should have access to pipelineRepo
-    default: github-token
+    default: github-auth
   deployTag:
     required: true
     description: image tag to deploy
