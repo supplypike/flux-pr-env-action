@@ -10,6 +10,7 @@ process.env.KUBECONFIG = path.resolve(__dirname, 'mocks/kubeconfig.yml')
 const NOCK_HOST = 'http://localhost:8080'
 // The k8s client expects some data to be returned for serialization but we don't care
 const MOCK_RES_DATA = { foo: 'bar' }
+const NOT_FOUND = { kind: 'Status', code: 404, reason: 'NotFound' }
 
 vi.mock('@actions/core')
 
@@ -98,6 +99,79 @@ describe('#deleteNamespacedKustomization', () => {
     await api.deleteNamespacedKustomization('NAME', 'NAMESPACE')
 
     expect(scope.done())
+  })
+
+  it('succeeds when the Kustomization is already gone', async () => {
+    const api = K8sApi()
+    const scope = nock(NOCK_HOST)
+      .delete(
+        '/apis/kustomize.toolkit.fluxcd.io/v1/namespaces/NAMESPACE/kustomizations/NAME'
+      )
+      .reply(404, NOT_FOUND)
+
+    await expect(
+      api.deleteNamespacedKustomization('NAME', 'NAMESPACE')
+    ).resolves.toBeUndefined()
+
+    scope.done()
+  })
+
+  it('throws on errors other than not found', async () => {
+    const api = K8sApi()
+    const scope = nock(NOCK_HOST)
+      .delete(
+        '/apis/kustomize.toolkit.fluxcd.io/v1/namespaces/NAMESPACE/kustomizations/NAME'
+      )
+      .reply(403, { kind: 'Status', code: 403, reason: 'Forbidden' })
+
+    await expect(
+      api.deleteNamespacedKustomization('NAME', 'NAMESPACE')
+    ).rejects.toThrow()
+
+    scope.done()
+  })
+})
+
+describe('#deleteNamespacedHelmRelease', () => {
+  it('DELETE to helmreleases v2 API', async () => {
+    const api = K8sApi()
+    const scope = nock(NOCK_HOST)
+      .delete(
+        '/apis/helm.toolkit.fluxcd.io/v2/namespaces/NAMESPACE/helmreleases/NAME'
+      )
+      .reply(200, MOCK_RES_DATA)
+
+    await api.deleteNamespacedHelmRelease('NAME', 'NAMESPACE')
+
+    scope.done()
+  })
+
+  it('succeeds when the HelmRelease is already gone', async () => {
+    const api = K8sApi()
+    const scope = nock(NOCK_HOST)
+      .delete(
+        '/apis/helm.toolkit.fluxcd.io/v2/namespaces/NAMESPACE/helmreleases/NAME'
+      )
+      .reply(404, NOT_FOUND)
+
+    await api.deleteNamespacedHelmRelease('NAME', 'NAMESPACE')
+
+    scope.done()
+  })
+})
+
+describe('#deleteNamespacedGitRepository when missing', () => {
+  it('succeeds when the GitRepository is already gone', async () => {
+    const api = K8sApi()
+    const scope = nock(NOCK_HOST)
+      .delete(
+        '/apis/source.toolkit.fluxcd.io/v1/namespaces/NAMESPACE/gitrepositories/NAME'
+      )
+      .reply(404, NOT_FOUND)
+
+    await api.deleteNamespacedGitRepository('NAME', 'NAMESPACE')
+
+    scope.done()
   })
 })
 
