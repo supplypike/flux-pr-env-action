@@ -7,7 +7,9 @@ export default defineConfig({
   platform: 'node',
   target: 'node24',
   clean: true,
-  noExternal: [/.*/],
-  inlineOnly: false,
+  deps: {
+    alwaysBundle: [/.*/],
+    onlyBundle: false
+  },
   failOnWarn: false
 })
