@@ -116607,7 +116607,7 @@ const gitRepository = {
 };
 const helmRelease = {
 	group: "helm.toolkit.fluxcd.io",
-	version: "v2beta2",
+	version: "v2",
 	kind: "HelmRelease",
 	plural: "helmreleases"
 };
@@ -116641,6 +116641,17 @@ function payload(name, namespace, { group, version, kind }, spec) {
 	};
 }
 const debug = (verb, customObject, obj) => debug$1(`${verb} ${customObject.kind}: ${JSON.stringify(obj, null, 2)}`);
+async function ignoreNotFound(customObject, name, request) {
+	try {
+		await request;
+	} catch (err) {
+		if (err instanceof ApiException && err.code === 404) {
+			info(`${customObject.kind} ${name} not found, skipping delete`);
+			return;
+		}
+		throw err;
+	}
+}
 function K8sApi() {
 	const kc = new KubeConfig();
 	kc.loadFromDefault({ onInvalidEntry: ActionOnInvalid.THROW });
@@ -116667,7 +116678,7 @@ function K8sApi() {
 	}
 	async function deleteNamespacedKustomization(name, namespace) {
 		debug("DELETE", kustomization, name);
-		await customApi.deleteNamespacedCustomObject(namespacedCustomObjectArgs(name, namespace, kustomization));
+		await ignoreNotFound(kustomization, name, customApi.deleteNamespacedCustomObject(namespacedCustomObjectArgs(name, namespace, kustomization)));
 	}
 	async function createNamespacedGitRepository(name, namespace, spec) {
 		const data = payload(name, namespace, gitRepository, spec);
@@ -116679,11 +116690,11 @@ function K8sApi() {
 	}
 	async function deleteNamespacedGitRepository(name, namespace) {
 		debug("DELETE", gitRepository, name);
-		await customApi.deleteNamespacedCustomObject(namespacedCustomObjectArgs(name, namespace, gitRepository));
+		await ignoreNotFound(gitRepository, name, customApi.deleteNamespacedCustomObject(namespacedCustomObjectArgs(name, namespace, gitRepository)));
 	}
 	async function deleteNamespacedHelmRelease(name, namespace) {
 		debug("DELETE", helmRelease, name);
-		await customApi.deleteNamespacedCustomObject(namespacedCustomObjectArgs(name, namespace, helmRelease));
+		await ignoreNotFound(helmRelease, name, customApi.deleteNamespacedCustomObject(namespacedCustomObjectArgs(name, namespace, helmRelease)));
 	}
 	return {
 		getNamespacedKustomization,

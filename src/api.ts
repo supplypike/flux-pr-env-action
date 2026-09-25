@@ -112,6 +112,24 @@ const debug = (
 ): void =>
   core.debug(`${verb} ${customObject.kind}: ${JSON.stringify(obj, null, 2)}`)
 
+// Deleting an object that is already gone is a no-op, so teardown can run
+// even after Flux has pruned or someone has removed the resources.
+async function ignoreNotFound(
+  customObject: CustomObjectDefinition,
+  name: string,
+  request: Promise<unknown>
+): Promise<void> {
+  try {
+    await request
+  } catch (err) {
+    if (err instanceof k8s.ApiException && err.code === 404) {
+      core.info(`${customObject.kind} ${name} not found, skipping delete`)
+      return
+    }
+    throw err
+  }
+}
+
 export function K8sApi(): Api {
   const kc = new k8s.KubeConfig()
   kc.loadFromDefault({
@@ -167,8 +185,12 @@ export function K8sApi(): Api {
     namespace: string
   ): Promise<void> {
     debug('DELETE', kustomization, name)
-    await customApi.deleteNamespacedCustomObject(
-      namespacedCustomObjectArgs(name, namespace, kustomization)
+    await ignoreNotFound(
+      kustomization,
+      name,
+      customApi.deleteNamespacedCustomObject(
+        namespacedCustomObjectArgs(name, namespace, kustomization)
+      )
     )
   }
 
@@ -190,8 +212,12 @@ export function K8sApi(): Api {
     namespace: string
   ): Promise<void> {
     debug('DELETE', gitRepository, name)
-    await customApi.deleteNamespacedCustomObject(
-      namespacedCustomObjectArgs(name, namespace, gitRepository)
+    await ignoreNotFound(
+      gitRepository,
+      name,
+      customApi.deleteNamespacedCustomObject(
+        namespacedCustomObjectArgs(name, namespace, gitRepository)
+      )
     )
   }
 
@@ -200,8 +226,12 @@ export function K8sApi(): Api {
     namespace: string
   ): Promise<void> {
     debug('DELETE', helmRelease, name)
-    await customApi.deleteNamespacedCustomObject(
-      namespacedCustomObjectArgs(name, namespace, helmRelease)
+    await ignoreNotFound(
+      helmRelease,
+      name,
+      customApi.deleteNamespacedCustomObject(
+        namespacedCustomObjectArgs(name, namespace, helmRelease)
+      )
     )
   }
 
