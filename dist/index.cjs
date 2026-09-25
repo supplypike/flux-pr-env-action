@@ -35,6 +35,7 @@ let node_net = require("node:net");
 node_net = __toESM(node_net, 1);
 let node_http = require("node:http");
 node_http = __toESM(node_http, 1);
+let node_crypto = require("node:crypto");
 let child_process = require("child_process");
 child_process = __toESM(child_process, 1);
 require("timers");
@@ -19873,6 +19874,8 @@ function removeRef(envVar) {
 }
 //#endregion
 //#region src/config.ts
+const MAX_RELEASE_NAME_LENGTH = 53;
+const HASH_LENGTH = 6;
 const INPUT_PIPELINE_PATH = "pipelinePath";
 const INPUT_PIPELINE_REPO = "pipelineRepo";
 const INPUT_PIPELINE_BRANCH = "pipelineBranch";
@@ -19882,10 +19885,24 @@ const INPUT_NAMESPACE = "namespace";
 const INPUT_SERVICENAME = "serviceName";
 const INPUT_SKIP_CHECK = "skipCheck";
 const INPUT_GIT_PROVIDER = "gitProvider";
+/**
+* previewBranch shortens the slugged branch so `<serviceName>-<branch>` fits
+* in a Helm release name. Branches that already fit are returned unchanged.
+* Shortened branches end in a hash of the full ref so two long branches with
+* the same prefix still get different names.
+*/
+function previewBranch(serviceName, ref) {
+	const branch = slugurlref(ref);
+	const budget = MAX_RELEASE_NAME_LENGTH - serviceName.length - 1;
+	if (branch.length <= budget) return branch;
+	const prefixLength = budget - HASH_LENGTH - 1;
+	if (prefixLength < 1) throw new Error(`serviceName "${serviceName}" is too long to build a preview name within ${MAX_RELEASE_NAME_LENGTH} characters`);
+	const hash = (0, node_crypto.createHash)("sha256").update(ref).digest("hex").substring(0, HASH_LENGTH);
+	return `${branch.substring(0, prefixLength).replace(/-+$/, "")}-${hash}`;
+}
 function formatInputs(payload, getInput$1 = getInput, getBooleanInput$1 = getBooleanInput) {
 	const { repo, ref } = payload.pull_request.head;
 	if (!repo) throw new Error("No repo found in payload");
-	const branchKubeNameClean = slugurlref(ref);
 	const { clone_url } = repo;
 	const repoName = slugurl(repo.name);
 	const gitSecret = getInput$1(INPUT_GIT_SECRET_NAME, { required: true });
@@ -19895,6 +19912,8 @@ function formatInputs(payload, getInput$1 = getInput, getBooleanInput$1 = getBoo
 	const namespace = getInput$1(INPUT_NAMESPACE, { required: true });
 	const deployTag = getInput$1(INPUT_DEPLOY_IMAGE, { required: true });
 	const serviceName = getInput$1(INPUT_SERVICENAME) || repoName;
+	const skipCheck = getBooleanInput$1(INPUT_SKIP_CHECK);
+	const branchKubeNameClean = previewBranch(serviceName, ref);
 	return {
 		branchKubeNameClean,
 		gitSecret,
@@ -19903,7 +19922,7 @@ function formatInputs(payload, getInput$1 = getInput, getBooleanInput$1 = getBoo
 		pipelineBranch,
 		namespace,
 		deployTag,
-		skipCheck: getBooleanInput$1(INPUT_SKIP_CHECK),
+		skipCheck,
 		name: slugurlref(`${serviceName}-${branchKubeNameClean}`),
 		gitProvider: getInput$1(INPUT_GIT_PROVIDER) || "github"
 	};
