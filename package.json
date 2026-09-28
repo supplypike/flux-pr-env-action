@@ -22,7 +22,7 @@
   "dependencies": {
     "@actions/core": "^3.0.1",
     "@actions/github": "^9.1.1",
-    "@kubernetes/client-node": "^1.4.0",
+    "@kubernetes/client-node": "^2.0.0",
     "@octokit/webhooks-types": "^7.6.1",
     "nock": "^14.0.17"
   },
